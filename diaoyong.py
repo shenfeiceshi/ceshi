@@ -46,7 +46,7 @@ handle_workflow_iterator(
         workflow_id=workflow_id,
         parameters={
             "danwei": "盆",
-            "guige": "1.6年生嫁接苗",
+            "guige": "1.8年生嫁接苗",
             "name": "法国玫昂月季 心之雕刻"
         }
     )
