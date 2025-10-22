@@ -1,0 +1,205 @@
+<!-- 小六日记详情页面 - AI智能评价 -->
+<view class="page-container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-content">
+      <view class="back-btn" bindtap="goBack">
+        <text class="back-icon">‹</text>
+      </view>
+      <view class="header-title">日记详情</view>
+      <view class="header-actions">
+        <view class="action-btn" bindtap="editDiary">
+          <text class="action-icon">✏️</text>
+        </view>
+        <view class="action-btn" bindtap="shareDiary">
+          <text class="action-icon">📤</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日记卡片 -->
+  <view class="diary-card">
+    <!-- 日期和心情天气 -->
+    <view class="diary-header">
+      <view class="date-section">
+        <view class="date-main">{{diaryData.dateDisplay}}</view>
+        <view class="date-sub">{{diaryData.weekDay}}</view>
+      </view>
+      <view class="mood-weather-section">
+        <view class="mood-item" wx:if="{{diaryData.mood}}">
+          <text class="mood-emoji">{{diaryData.moodEmoji}}</text>
+          <text class="mood-name">{{diaryData.moodName}}</text>
+        </view>
+        <view class="weather-item" wx:if="{{diaryData.weather}}">
+          <text class="weather-emoji">{{diaryData.weatherEmoji}}</text>
+          <text class="weather-name">{{diaryData.weatherName}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 日记内容 -->
+    <view class="diary-content">
+      <view class="content-text">{{diaryData.content}}</view>
+    </view>
+
+    <!-- 日记图片 -->
+    <view class="diary-images" wx:if="{{diaryData.images && diaryData.images.length > 0}}">
+      <view class="images-grid">
+        <view class="image-item" 
+              wx:for="{{diaryData.images}}" 
+              wx:key="index"
+              bindtap="previewImage" 
+              data-index="{{index}}">
+          <image class="diary-image" src="{{item.url || item}}" mode="aspectFill"></image>
+          <view class="ai-badge" wx:if="{{item.isAiGenerated}}">
+            <text class="ai-text">AI</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 日记标签 -->
+    <view class="diary-tags" wx:if="{{diaryData.tags && diaryData.tags.length > 0}}">
+      <view class="tag-item" wx:for="{{diaryData.tags}}" wx:key="*this">
+        {{item}}
+      </view>
+    </view>
+
+    <!-- 日记统计 -->
+    <view class="diary-stats">
+      <view class="stats-item">
+        <text class="stats-icon">📝</text>
+        <text class="stats-text">{{diaryData.wordCount}}字</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-icon">👀</text>
+        <text class="stats-text">{{diaryData.viewCount || 1}}次查看</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-icon">⏰</text>
+        <text class="stats-text">{{diaryData.createTime}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI评价卡片 -->
+  <view class="ai-comment-card" wx:if="{{diaryData.aiComment}}">
+    <view class="ai-header">
+      <view class="ai-avatar">🤖</view>
+      <view class="ai-info">
+        <view class="ai-name">AI小助手</view>
+        <view class="ai-desc">为你的日记写了温馨评语</view>
+      </view>
+      <view class="ai-time">{{diaryData.aiComment.time}}</view>
+    </view>
+    
+    <view class="ai-comment-content">
+      <view class="comment-bubble">
+        <view class="comment-text">{{diaryData.aiComment.text}}</view>
+      </view>
+    </view>
+
+    <!-- AI评价操作 -->
+    <view class="ai-actions">
+      <view class="ai-action-btn like {{aiLiked ? 'active' : ''}}" bindtap="toggleAiLike">
+        <text class="action-emoji">{{aiLiked ? '❤️' : '🤍'}}</text>
+        <text class="action-text">{{aiLiked ? '已赞' : '点赞'}}</text>
+      </view>
+      <view class="ai-action-btn regenerate" bindtap="regenerateAiComment">
+        <text class="action-emoji">🔄</text>
+        <text class="action-text">重新生成</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 生成AI评价按钮 -->
+  <view class="generate-ai-card" wx:if="{{!diaryData.aiComment && !generatingComment}}">
+    <view class="generate-content" bindtap="generateAiComment">
+      <view class="generate-icon">✨</view>
+      <view class="generate-text">
+        <view class="generate-title">让AI为你的日记写评语</view>
+        <view class="generate-desc">AI小助手会根据你的日记内容，写一段温馨的评语哦！</view>
+      </view>
+      <view class="generate-arrow">›</view>
+    </view>
+  </view>
+
+  <!-- AI评价生成中 -->
+  <view class="generating-ai-card" wx:if="{{generatingComment}}">
+    <view class="generating-content">
+      <view class="generating-icon">
+        <view class="loading-dot"></view>
+        <view class="loading-dot"></view>
+        <view class="loading-dot"></view>
+      </view>
+      <view class="generating-text">AI小助手正在为你写评语...</view>
+    </view>
+  </view>
+
+  <!-- 相关日记推荐 -->
+  <view class="related-section" wx:if="{{relatedDiaries.length > 0}}">
+    <view class="section-title">
+      <text class="title-icon">📚</text>
+      <text class="title-text">相关日记</text>
+    </view>
+    <scroll-view class="related-list" scroll-x="true">
+      <view class="related-item" 
+            wx:for="{{relatedDiaries}}" 
+            wx:key="id"
+            bindtap="viewRelatedDiary" 
+            data-id="{{item.id}}">
+        <view class="related-date">{{item.dateDisplay}}</view>
+        <view class="related-preview">{{item.preview}}</view>
+        <view class="related-mood">
+          <text class="mood-emoji">{{item.moodEmoji}}</text>
+          <text class="mood-name">{{item.moodName}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 底部导航 -->
+  <view class="bottom-navigation">
+    <view class="nav-item" bindtap="goToPrevDiary">
+      <text class="nav-icon">‹</text>
+      <text class="nav-text">上一篇</text>
+    </view>
+    <view class="nav-item main" bindtap="goToList">
+      <text class="nav-icon">📋</text>
+      <text class="nav-text">日记列表</text>
+    </view>
+    <view class="nav-item" bindtap="goToNextDiary">
+      <text class="nav-icon">›</text>
+      <text class="nav-text">下一篇</text>
+    </view>
+  </view>
+</view>
+
+<!-- 分享弹窗 -->
+<view class="share-modal" wx:if="{{showShareModal}}">
+  <view class="modal-mask" bindtap="closeShareModal"></view>
+  <view class="modal-content">
+    <view class="modal-header">
+      <view class="modal-title">分享日记</view>
+      <view class="modal-close" bindtap="closeShareModal">×</view>
+    </view>
+    <view class="share-options">
+      <view class="share-option" bindtap="shareToFriend">
+        <text class="share-emoji">💬</text>
+        <text class="share-text">分享给朋友</text>
+      </view>
+      <view class="share-option" bindtap="generateShareImage">
+        <text class="share-emoji">🖼️</text>
+        <text class="share-text">生成图片</text>
+      </view>
+      <view class="share-option" bindtap="copyDiaryContent">
+        <text class="share-emoji">📋</text>
+        <text class="share-text">复制内容</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 底部安全区域 -->
+<view class="safe-area-bottom"></view>

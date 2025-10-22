@@ -1,0 +1,88 @@
+<!--任务列表页面-->
+<view class="page-container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-title">任务列表</view>
+    <view class="header-subtitle">完成任务，获得成长积分</view>
+  </view>
+
+  <!-- 顶部统计卡片 -->
+  <view class="stats-card">
+    <view class="stat-item">
+      <view class="stat-number">{{todayStats.completed}}</view>
+      <view class="stat-label">今日完成</view>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="stat-number">{{todayStats.total}}</view>
+      <view class="stat-label">今日任务</view>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <view class="stat-number">{{todayStats.points}}</view>
+      <view class="stat-label">今日积分</view>
+    </view>
+  </view>
+
+  <!-- 任务筛选 -->
+  <view class="filter-tabs">
+    <view class="tab-item {{currentTab === 'all' ? 'active' : ''}}" 
+          bindtap="switchTab" 
+          data-tab="all">
+      全部任务
+    </view>
+    <view class="tab-item {{currentTab === 'pending' ? 'active' : ''}}" 
+          bindtap="switchTab" 
+          data-tab="pending">
+      待完成
+    </view>
+    <view class="tab-item {{currentTab === 'completed' ? 'active' : ''}}" 
+          bindtap="switchTab" 
+          data-tab="completed">
+      已完成
+    </view>
+  </view>
+
+  <!-- 任务列表 -->
+  <view class="task-list">
+    <view class="task-item {{item.completed ? 'completed' : ''}}" 
+          wx:for="{{filteredTasks}}" 
+          wx:key="id">
+      <view class="task-content" bindtap="toggleTask" data-id="{{item.id}}">
+        <view class="task-checkbox {{item.completed ? 'checked' : ''}}">
+          <image wx:if="{{item.completed}}" 
+                 class="check-icon" 
+                 src="/images/icons/check.png"></image>
+        </view>
+        <view class="task-info">
+          <view class="task-title">{{item.title}}</view>
+          <view class="task-meta">
+            <view class="task-category">{{item.category}}</view>
+            <view class="task-points">+{{item.points}}积分</view>
+            <view class="task-time">{{item.time}}</view>
+          </view>
+        </view>
+      </view>
+      <view class="task-actions">
+        <view class="action-btn edit" bindtap="editTask" data-id="{{item.id}}">
+          <image class="action-icon" src="/images/icons/edit.png"></image>
+        </view>
+        <view class="action-btn delete" bindtap="deleteTask" data-id="{{item.id}}">
+          <image class="action-icon" src="/images/icons/star.png"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{filteredTasks.length === 0}}">
+    <image class="empty-icon" src="/images/icons/book.png"></image>
+    <view class="empty-text">暂无任务</view>
+  </view>
+
+  <!-- 添加任务按钮 -->
+  <view class="add-task-btn" bindtap="addTask">
+    <image class="add-icon" src="/images/icons/star.png"></image>
+    <text>添加任务</text>
+  </view>
+</view>

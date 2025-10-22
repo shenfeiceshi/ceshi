@@ -1,0 +1,84 @@
+<view class="settings-container">
+  <!-- 页面头部 -->
+  <view class="header">
+    <view class="header-left" bindtap="goBack">
+      <text class="back-icon">‹</text>
+    </view>
+    <view class="header-title">设置</view>
+    <view class="header-right"></view>
+  </view>
+
+  <!-- 页面内容 -->
+  <view class="content">
+    <!-- 页面标题 -->
+    <view class="page-title">
+      <view class="title">个人设置</view>
+      <view class="subtitle">修改个人信息</view>
+    </view>
+
+    <!-- 用户信息设置 -->
+    <view class="settings-section">
+      <view class="settings-card">
+        <!-- 头像设置 -->
+        <view class="setting-item" bindtap="changeAvatar">
+          <view class="setting-icon">👤</view>
+          <view class="setting-content">
+            <view class="setting-title">头像</view>
+            <view class="setting-desc">点击更换头像</view>
+          </view>
+          <view class="avatar-preview">
+            <image class="avatar-img" src="{{userInfo.avatar || '/images/default-avatar.png'}}"></image>
+          </view>
+          <image class="arrow-icon" src="/images/icons/arrow-right.png"></image>
+        </view>
+
+        <!-- 昵称设置 -->
+        <view class="setting-item" bindtap="editNickname">
+          <view class="setting-icon">✏️</view>
+          <view class="setting-content">
+            <view class="setting-title">昵称</view>
+            <view class="setting-desc">点击修改昵称</view>
+          </view>
+          <view class="setting-value">{{userInfo.nickname || '小朋友'}}</view>
+          <image class="arrow-icon" src="/images/icons/arrow-right.png"></image>
+        </view>
+
+        <!-- 账号安全管理 -->
+        <view class="setting-item" bindtap="goToAccountSecurity">
+          <view class="setting-icon">🔒</view>
+          <view class="setting-content">
+            <view class="setting-title">账号安全</view>
+            <view class="setting-desc">管理账号安全设置</view>
+          </view>
+          <image class="arrow-icon" src="/images/icons/arrow-right.png"></image>
+        </view>
+
+        <!-- 退出登录 -->
+        <view class="setting-item logout-item" bindtap="logout">
+          <view class="setting-icon">🚪</view>
+          <view class="setting-content">
+            <view class="setting-title logout-text">退出登录</view>
+            <view class="setting-desc">退出当前账号</view>
+          </view>
+          <image class="arrow-icon" src="/images/icons/arrow-right.png"></image>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 编辑弹窗 -->
+  <view class="edit-modal {{showEditModal ? 'show' : ''}}" bindtap="hideEditModal">
+    <view class="edit-content" catchtap="stopPropagation">
+      <view class="modal-title">{{editTitle}}</view>
+      <input class="edit-input" 
+             placeholder="{{editPlaceholder}}" 
+             value="{{editValue}}" 
+             bindinput="onEditInput"
+             focus="{{showEditModal}}"></input>
+      <view class="modal-actions">
+        <view class="modal-btn cancel" bindtap="hideEditModal">取消</view>
+        <view class="modal-btn confirm" bindtap="confirmEdit">确定</view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,80 @@
+<!--pages/profile/account-security/account-security.wxml-->
+<view class="container">
+  <!-- 顶部导航 -->
+  <view class="nav-bar">
+    <view class="nav-back" bindtap="goBack">
+      <text>←</text>
+    </view>
+    <view class="nav-title">账号安全</view>
+  </view>
+
+  <!-- 页面内容 -->
+  <view class="content">
+    <!-- 修改密码表单 -->
+    <view class="password-section">
+      <view class="section-title">
+        <text class="section-icon">🔒</text>
+        修改密码
+      </view>
+      
+      <view class="password-form">
+        <!-- 当前密码 -->
+        <view class="form-item">
+          <view class="form-label">当前密码</view>
+          <view class="input-wrapper">
+            <text class="input-icon">🔒</text>
+            <input class="form-input" 
+                   type="password" 
+                   placeholder="请输入当前密码" 
+                   value="{{passwordForm.oldPassword}}"
+                   bindinput="onOldPasswordInput"
+                   maxlength="20" />
+          </view>
+          <view class="error-msg" wx:if="{{passwordErrors.oldPassword}}">{{passwordErrors.oldPassword}}</view>
+        </view>
+
+        <!-- 新密码 -->
+        <view class="form-item">
+          <view class="form-label">新密码</view>
+          <view class="input-wrapper">
+            <text class="input-icon">🔒</text>
+            <input class="form-input" 
+                   type="password" 
+                   placeholder="请输入新密码（6-20位）" 
+                   value="{{passwordForm.newPassword}}"
+                   bindinput="onNewPasswordInput"
+                   maxlength="20" />
+          </view>
+          <view class="error-msg" wx:if="{{passwordErrors.newPassword}}">{{passwordErrors.newPassword}}</view>
+        </view>
+
+        <!-- 确认新密码 -->
+        <view class="form-item">
+          <view class="form-label">确认新密码</view>
+          <view class="input-wrapper">
+            <text class="input-icon">🔒</text>
+            <input class="form-input" 
+                   type="password" 
+                   placeholder="请再次输入新密码" 
+                   value="{{passwordForm.confirmPassword}}"
+                   bindinput="onConfirmPasswordInput"
+                   maxlength="20" />
+          </view>
+          <view class="error-msg" wx:if="{{passwordErrors.confirmPassword}}">{{passwordErrors.confirmPassword}}</view>
+        </view>
+
+        <!-- 提交按钮 -->
+        <button class="submit-button" 
+                bindtap="changePassword" 
+                disabled="{{isChangingPassword}}"
+                loading="{{isChangingPassword}}">
+          {{isChangingPassword ? '修改中...' : '确认修改'}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- Toast 组件 -->
+<van-toast id="van-toast" />
+<van-dialog id="van-dialog" />

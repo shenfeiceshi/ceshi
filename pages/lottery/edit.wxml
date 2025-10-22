@@ -1,0 +1,200 @@
+<!--奖品编辑页面-->
+<view class="container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-title">{{mode === 'add' ? '添加奖品' : '编辑奖品'}}</view>
+    <view class="header-subtitle">{{mode === 'add' ? '创建新的抽奖奖品' : '修改奖品信息'}}</view>
+  </view>
+
+  <!-- 表单内容 -->
+  <view class="form-section">
+    <!-- 奖品图片 -->
+    <view class="form-group">
+      <view class="form-label">
+        <image class="label-icon" src="/images/icons/image.png"></image>
+        <text>奖品图片</text>
+      </view>
+      <view class="image-upload" bindtap="chooseImage">
+        <image wx:if="{{prizeData.image}}" class="prize-preview" src="{{prizeData.image}}"></image>
+        <view wx:else class="upload-placeholder">
+          <image class="upload-icon" src="/images/icons/camera.png"></image>
+          <text class="upload-text">点击上传图片</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 奖品名称 -->
+    <view class="form-group">
+      <view class="form-label">
+        <image class="label-icon" src="/images/icons/gift.png"></image>
+        <text>奖品名称</text>
+      </view>
+      <input class="form-input" 
+             placeholder="请输入奖品名称" 
+             value="{{prizeData.name}}"
+             bindinput="onNameInput"
+             maxlength="20" />
+      <view class="input-counter">{{prizeData.name.length}}/20</view>
+    </view>
+
+    <!-- 奖品描述 -->
+    <view class="form-group">
+      <view class="form-label">
+        <image class="label-icon" src="/images/icons/desc.png"></image>
+        <text>奖品描述</text>
+      </view>
+      <textarea class="form-textarea" 
+                placeholder="请输入奖品描述，让小朋友更了解这个奖品" 
+                value="{{prizeData.description}}"
+                bindinput="onDescInput"
+                maxlength="100"
+                auto-height />
+      <view class="input-counter">{{prizeData.description.length}}/100</view>
+    </view>
+
+    <!-- 奖品类型 -->
+    <view class="form-group">
+      <view class="form-label">
+        <image class="label-icon" src="/images/icons/category.png"></image>
+        <text>奖品类型</text>
+      </view>
+      <view class="type-selector">
+        <view class="type-option {{prizeData.type === 'virtual' ? 'active' : ''}}" 
+              bindtap="selectType" data-type="virtual">
+          <image class="type-icon" src="/images/icons/virtual.png"></image>
+          <text>虚拟奖品</text>
+        </view>
+        <view class="type-option {{prizeData.type === 'badge' ? 'active' : ''}}" 
+              bindtap="selectType" data-type="badge">
+          <image class="type-icon" src="/images/icons/badge.png"></image>
+          <text>成就徽章</text>
+        </view>
+        <view class="type-option {{prizeData.type === 'physical' ? 'active' : ''}}" 
+              bindtap="selectType" data-type="physical">
+          <image class="type-icon" src="/images/icons/physical.png"></image>
+          <text>实物奖品</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 中奖概率 -->
+    <view class="form-group">
+      <view class="form-label">
+        <image class="label-icon" src="/images/icons/probability.png"></image>
+        <text>中奖概率</text>
+      </view>
+      <view class="probability-section">
+        <slider class="probability-slider" 
+                value="{{prizeData.probability}}" 
+                min="1" 
+                max="50" 
+                step="1"
+                bindchange="onProbabilityChange"
+                activeColor="#667eea"
+                backgroundColor="#e0e0e0" />
+        <view class="probability-value">{{prizeData.probability}}%</view>
+      </view>
+      <view class="probability-tips">
+        <text class="tip-item">💡 概率越高，中奖机会越大</text>
+        <text class="tip-item">🎯 建议设置1-20%之间</text>
+      </view>
+    </view>
+
+    <!-- 库存数量 -->
+    <view class="form-group" wx:if="{{prizeData.type === 'physical'}}">
+      <view class="form-label">
+        <image class="label-icon" src="/images/icons/stock.png"></image>
+        <text>库存数量</text>
+      </view>
+      <view class="stock-section">
+        <view class="stock-option {{prizeData.stockType === 'unlimited' ? 'active' : ''}}" 
+              bindtap="selectStockType" data-type="unlimited">
+          <image class="option-icon" src="/images/icons/unlimited.png"></image>
+          <text>无限库存</text>
+        </view>
+        <view class="stock-option {{prizeData.stockType === 'limited' ? 'active' : ''}}" 
+              bindtap="selectStockType" data-type="limited">
+          <image class="option-icon" src="/images/icons/limited.png"></image>
+          <text>限量库存</text>
+        </view>
+      </view>
+      <view class="stock-input" wx:if="{{prizeData.stockType === 'limited'}}">
+        <input class="form-input" 
+               type="number" 
+               placeholder="请输入库存数量" 
+               value="{{prizeData.stock}}"
+               bindinput="onStockInput" />
+        <text class="stock-unit">件</text>
+      </view>
+    </view>
+
+    <!-- 奖品价值 -->
+    <view class="form-group" wx:if="{{prizeData.type === 'virtual'}}">
+      <view class="form-label">
+        <image class="label-icon" src="/images/icons/value.png"></image>
+        <text>奖品价值</text>
+      </view>
+      <view class="value-section">
+        <input class="form-input" 
+               type="number" 
+               placeholder="请输入积分数量" 
+               value="{{prizeData.value}}"
+               bindinput="onValueInput" />
+        <text class="value-unit">积分</text>
+      </view>
+    </view>
+
+    <!-- 启用状态 -->
+    <view class="form-group">
+      <view class="form-label">
+        <image class="label-icon" src="/images/icons/status.png"></image>
+        <text>启用状态</text>
+      </view>
+      <view class="status-section">
+        <switch class="status-switch" 
+                checked="{{prizeData.status === 'active'}}"
+                bindchange="onStatusChange"
+                color="#667eea" />
+        <text class="status-text">{{prizeData.status === 'active' ? '已启用' : '已禁用'}}</text>
+      </view>
+      <view class="status-tips">
+        <text wx:if="{{prizeData.status === 'active'}}">✅ 奖品将出现在抽奖转盘中</text>
+        <text wx:else>⏸️ 奖品暂时不会出现在抽奖中</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作按钮 -->
+  <view class="actions-section">
+    <view class="action-btn secondary" bindtap="goBack">
+      <image class="btn-icon" src="/images/icons/back.png"></image>
+      <text>取消</text>
+    </view>
+    <view class="action-btn primary" bindtap="savePrize">
+      <image class="btn-icon" src="/images/icons/save.png"></image>
+      <text>{{mode === 'add' ? '添加奖品' : '保存修改'}}</text>
+    </view>
+  </view>
+
+  <!-- 预览区域 -->
+  <view class="preview-section" wx:if="{{prizeData.name}}">
+    <view class="preview-title">预览效果</view>
+    <view class="preview-card">
+      <image class="preview-image" src="{{prizeData.image || '/images/default-prize.png'}}"></image>
+      <view class="preview-info">
+        <view class="preview-name">{{prizeData.name}}</view>
+        <view class="preview-desc">{{prizeData.description || '暂无描述'}}</view>
+        <view class="preview-meta">
+          <text class="meta-tag">{{typeNames[prizeData.type]}}</text>
+          <text class="meta-tag">{{prizeData.probability}}%</text>
+          <text class="meta-tag" wx:if="{{prizeData.type === 'physical' && prizeData.stockType === 'limited'}}">
+            库存{{prizeData.stock}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 底部安全区域 -->
+<view class="safe-area-bottom"></view>

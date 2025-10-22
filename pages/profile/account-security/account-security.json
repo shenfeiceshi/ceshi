@@ -1,0 +1,16 @@
+{
+  "navigationBarTitleText": "账号安全",
+  "navigationBarBackgroundColor": "#FF6B35",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f8f8f8",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "van-icon": "@vant/weapp/dist/icon/index",
+    "van-button": "@vant/weapp/dist/button/index",
+    "van-field": "@vant/weapp/dist/field/index",
+    "van-popup": "@vant/weapp/dist/popup/index",
+    "van-toast": "@vant/weapp/dist/toast/index",
+    "van-loading": "@vant/weapp/dist/loading/index",
+    "van-dialog": "@vant/weapp/dist/dialog/index"
+  }
+}

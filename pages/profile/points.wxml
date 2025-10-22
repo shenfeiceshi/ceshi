@@ -1,0 +1,62 @@
+<!-- 我的个人中心页面 -->
+<view class="page-container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-header">
+      <view class="avatar-container" bindtap="onAvatarTap">
+        <image class="avatar" src="{{userInfo.avatar}}" mode="aspectFill"></image>
+        <view class="level-badge">{{userInfo.level}}</view>
+      </view>
+      <view class="user-info">
+        <view class="nickname">{{userInfo.nickname}}</view>
+        <view class="points-display">
+          <text class="points-icon">💰</text>
+          <text class="points-text">{{userInfo.totalPoints}} 积分</text>
+        </view>
+      </view>
+    </view>
+    
+    <!-- 统计数据 -->
+    <view class="stats-container">
+      <view class="stat-item">
+        <view class="stat-number">{{stats.totalTasks}}</view>
+        <view class="stat-label">总任务</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-number">{{stats.completedTasks}}</view>
+        <view class="stat-label">已完成</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-number">{{stats.totalDiaries}}</view>
+        <view class="stat-label">日记数</view>
+      </view>
+      <view class="stat-item">
+        <view class="stat-number">{{stats.continuousDays}}</view>
+        <view class="stat-label">连续天数</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-container">
+    <view class="menu-item" 
+          wx:for="{{menuItems}}" 
+          wx:key="id" 
+          data-id="{{item.id}}"
+          bindtap="onMenuItemTap">
+      <view class="menu-left">
+        <view class="menu-icon">{{item.icon}}</view>
+        <view class="menu-content">
+          <view class="menu-title">{{item.title}}</view>
+          <view class="menu-desc">{{item.desc}}</view>
+        </view>
+      </view>
+      <view class="menu-arrow" wx:if="{{item.arrow}}">
+        <text class="arrow-icon">›</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部空白 -->
+  <view class="bottom-space"></view>
+</view>

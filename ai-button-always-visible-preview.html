@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI生成按钮修复预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content-input {
+            width: 100%;
+            min-height: 100px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        .content-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .char-count {
+            text-align: right;
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .image-upload-container {
+            border: 2px dashed #e1e5e9;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .image-add-options {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .add-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 80px;
+            background: white;
+        }
+
+        .add-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .add-option.ai-option {
+            border-color: #ff6b6b;
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: white;
+        }
+
+        .add-option.ai-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+        }
+
+        .option-icon {
+            font-size: 24px;
+        }
+
+        .option-text {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .status-value {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .demo-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .demo-btn.primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .demo-btn.secondary {
+            background: #e1e5e9;
+            color: #333;
+        }
+
+        .demo-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 300px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .modal-text {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .modal-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .fix-highlight {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .fix-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .fix-desc {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 AI按钮修复预览</h1>
+            <p>验证AI生成按钮始终可见</p>
+        </div>
+
+        <div class="content">
+            <div class="fix-highlight">
+                <div class="fix-title">✅ 修复完成</div>
+                <div class="fix-desc">AI生成按钮现在始终可见，不再受内容长度限制！</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📊 修复状态</div>
+                <div class="status-info">
+                    <div class="status-item">
+                        <span class="status-label">按钮显示条件</span>
+                        <span class="status-value status-success">已移除限制</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">内容检查逻辑</span>
+                        <span class="status-value status-success">已优化</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">用户提示</span>
+                        <span class="status-value status-success">已改进</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📝 日记内容</div>
+                <textarea 
+                    class="content-input" 
+                    id="contentInput"
+                    placeholder="今天发生了什么有趣的事情呢？快来分享一下吧..."
+                    oninput="updateCharCount()"
+                ></textarea>
+                <div class="char-count" id="charCount">0/1000</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📷 添加照片</div>
+                <div class="image-upload-container">
+                    <div class="image-add-options">
+                        <div class="add-option" onclick="showMessage('相册选择功能')">
+                            <div class="option-icon">📷</div>
+                            <div class="option-text">相册选择</div>
+                        </div>
+                        <div class="add-option" onclick="showMessage('现场拍照功能')">
+                            <div class="option-icon">📸</div>
+                            <div class="option-text">现场拍照</div>
+                        </div>
+                        <div class="add-option ai-option" onclick="testAIGenerate()">
+                            <div class="option-icon">🎨</div>
+                            <div class="option-text">AI生成</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">🧪 测试功能</div>
+                <div class="demo-buttons">
+                    <button class="demo-btn secondary" onclick="clearContent()">清空内容</button>
+                    <button class="demo-btn primary" onclick="fillSampleContent()">填入示例</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">提示</div>
+            <div class="modal-text" id="modalText"></div>
+            <button class="modal-btn" onclick="closeModal()">我知道了</button>
+        </div>
+    </div>
+
+    <script>
+        function updateCharCount() {
+            const input = document.getElementById('contentInput');
+            const count = document.getElementById('charCount');
+            count.textContent = `${input.value.length}/1000`;
+        }
+
+        function testAIGenerate() {
+            const content = document.getElementById('contentInput').value;
+            
+            if (content.length < 10) {
+                showModal('提示', '请先写一些日记内容（至少10个字符）再生成AI图片哦～');
+            } else {
+                showModal('成功', `内容长度: ${content.length}字符\n\n正在调用扣子工作流API生成AI图片...\n\n✅ 按钮现在始终可见！\n无论内容长度如何，用户都能看到AI生成选项。`);
+            }
+        }
+
+        function showModal(title, text) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+        }
+
+        function showMessage(feature) {
+            showModal('功能演示', `${feature}演示\n\n这是一个预览页面，实际功能在微信小程序中实现。`);
+        }
+
+        function clearContent() {
+            document.getElementById('contentInput').value = '';
+            updateCharCount();
+        }
+
+        function fillSampleContent() {
+            document.getElementById('contentInput').value = '今天是个美好的一天！阳光明媚，心情特别好。和朋友一起去公园散步，看到了很多美丽的花朵。';
+            updateCharCount();
+        }
+
+        // 点击模态框外部关闭
+        window.onclick = function(event) {
+            const modal = document.getElementById('modal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // 页面加载时显示说明
+        window.onload = function() {
+            setTimeout(() => {
+                showModal('修复说明', '🎉 AI生成按钮修复完成！\n\n现在无论日记内容长度如何，AI生成按钮都会始终显示。\n\n当内容不足时，点击会显示友好的提示信息。\n\n请尝试在上方输入不同长度的内容来测试效果！');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>

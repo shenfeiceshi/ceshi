@@ -1,0 +1,239 @@
+<!--小六日记编辑页面 - AI智能配图-->
+<view class="page-container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-content">
+      <view class="header-left">
+        <view class="back-btn" bindtap="goBack">
+          <text class="back-icon">←</text>
+        </view>
+        <view class="page-title">{{mode === 'edit' ? '编辑日记' : '写日记'}}</view>
+      </view>
+      <view class="header-right">
+        <view class="save-btn" bindtap="saveDraft">
+          <text class="save-text">草稿</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日期选择 -->
+  <view class="date-section">
+    <picker mode="date" 
+            value="{{selectedDate}}" 
+            bindchange="onDateChange">
+      <view class="date-picker">
+        <view class="date-icon">📅</view>
+        <view class="date-text">{{selectedDate}}</view>
+        <view class="date-arrow">></view>
+      </view>
+    </picker>
+  </view>
+
+  <!-- 心情天气选择 -->
+  <view class="mood-weather-section">
+    <view class="section-title">今天的心情和天气 ✨</view>
+    
+    <!-- 心情选择 -->
+    <view class="mood-selector">
+      <view class="selector-label">心情</view>
+      <view class="mood-options-grid">
+        <view class="mood-option {{selectedMood === mood.id ? 'active' : ''}}"
+              wx:for="{{moodOptions}}" 
+              wx:for-item="mood"
+              wx:key="id"
+              bindtap="selectMood" 
+              data-mood="{{mood.id}}">
+          <text class="mood-emoji">{{mood.emoji}}</text>
+          <text class="mood-name">{{mood.name}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 天气选择 -->
+    <view class="weather-selector">
+      <view class="selector-label">天气</view>
+      <view class="weather-options-grid">
+        <view class="weather-option {{selectedWeather === weather.id ? 'active' : ''}}"
+              wx:for="{{weatherOptions}}" 
+              wx:for-item="weather"
+              wx:key="id"
+              bindtap="selectWeather" 
+              data-weather="{{weather.id}}">
+          <text class="weather-emoji">{{weather.emoji}}</text>
+          <text class="weather-name">{{weather.name}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 日记内容输入 -->
+  <view class="content-section">
+    <view class="section-title">记录今天的故事 📝</view>
+    <view class="content-input-container">
+      <textarea class="content-input"
+                placeholder="今天发生了什么有趣的事情呢？快来分享一下吧..."
+                value="{{content}}"
+                bindinput="onContentInput"
+                bindblur="onContentBlur"
+                auto-height
+                maxlength="1000"
+                show-confirm-bar="{{false}}">
+      </textarea>
+      <view class="input-counter">{{content.length}}/1000</view>
+    </view>
+  </view>
+
+  <!-- AI配图功能 -->
+  <view class="ai-image-section" wx:if="{{content.length > 10}}">
+    <view class="section-title">AI智能配图 🎨</view>
+    <view class="ai-image-container">
+      <!-- AI配图建议 -->
+      <view class="ai-suggestions" wx:if="{{aiImageSuggestions.length > 0}}">
+        <view class="suggestions-title">为你推荐的配图：</view>
+        <view class="suggestions-list">
+          <view class="suggestion-item {{item.selected ? 'selected' : ''}}"
+                wx:for="{{aiImageSuggestions}}" 
+                wx:key="id"
+                bindtap="selectAISuggestion" 
+                data-id="{{item.id}}">
+            <image class="suggestion-image" src="{{item.imageUrl}}" mode="aspectFill"></image>
+            <view class="suggestion-desc">{{item.description}}</view>
+            <view class="suggestion-check" wx:if="{{item.selected}}">✓</view>
+          </view>
+        </view>
+      </view>
+
+      <!-- AI配图按钮 -->
+      <view class="ai-generate-btn" bindtap="generateAIImage" wx:if="{{!isAiGenerating}}">
+        <view class="ai-icon">🤖</view>
+        <view class="ai-text">
+          <view class="ai-title">AI智能配图</view>
+          <view class="ai-desc">根据日记内容生成配图</view>
+        </view>
+        <view class="generate-arrow">→</view>
+      </view>
+
+      <!-- AI生成中状态 -->
+      <view class="ai-generating" wx:if="{{isAiGenerating}}">
+        <view class="generating-icon">
+          <view class="loading-dot"></view>
+          <view class="loading-dot"></view>
+          <view class="loading-dot"></view>
+        </view>
+        <view class="generating-text">AI正在为你生成配图...</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 图片上传 -->
+  <view class="image-section">
+    <view class="section-title">添加照片 📷</view>
+    <view class="image-upload-container">
+      <view class="uploaded-images" wx:if="{{uploadedImages.length > 0}}">
+        <view class="image-item" wx:for="{{uploadedImages}}" wx:key="id">
+          <image class="uploaded-image" src="{{item.url}}" mode="aspectFill" bindtap="previewImage" data-url="{{item.url}}"></image>
+          <view class="image-delete" bindtap="deleteImage" data-id="{{item.id}}">×</view>
+          <view class="ai-badge" wx:if="{{item.isAiGenerated}}">AI</view>
+        </view>
+      </view>
+      
+      <!-- 图片添加选项 -->
+      <view class="image-add-options" wx:if="{{uploadedImages.length < 9}}">
+        <view class="add-option" bindtap="chooseFromAlbum">
+          <view class="option-icon">📷</view>
+          <view class="option-text">相册选择</view>
+        </view>
+        <view class="add-option" bindtap="takePhoto">
+          <view class="option-icon">📸</view>
+          <view class="option-text">现场拍照</view>
+        </view>
+        <view class="add-option" bindtap="generateAIImage">
+          <view class="option-icon">🎨</view>
+          <view class="option-text">AI生成</view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 标签选择 -->
+  <view class="tags-section">
+    <view class="section-title">添加标签 🏷️</view>
+    <view class="tags-container">
+      <!-- 已选标签 -->
+      <view class="selected-tags" wx:if="{{selectedTags.length > 0}}">
+        <view class="tag-item selected" 
+              wx:for="{{selectedTags}}" 
+              wx:key="*this"
+              bindtap="removeTag" 
+              data-tag="{{item}}">
+          #{{item}} ×
+        </view>
+      </view>
+
+      <!-- 推荐标签 -->
+      <view class="recommended-tags">
+        <view class="tag-item" 
+              wx:for="{{recommendedTags}}" 
+              wx:key="*this"
+              bindtap="addTag" 
+              data-tag="{{item}}"
+              wx:if="{{!selectedTags.includes(item)}}">
+          #{{item}}
+        </view>
+      </view>
+
+      <!-- 自定义标签输入 -->
+      <view class="custom-tag-input">
+        <input class="tag-input"
+               placeholder="自定义标签"
+               value="{{customTag}}"
+               bindinput="onCustomTagInput"
+               bindconfirm="addCustomTag"
+               maxlength="10" />
+        <view class="tag-add-btn" bindtap="addCustomTag" wx:if="{{customTag}}">+</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- AI评价预览 -->
+  <view class="ai-comment-section" wx:if="{{content.length > 20}}">
+    <view class="section-title">AI小助手的话 🤖</view>
+    <view class="ai-comment-container">
+      <view class="ai-comment-card" wx:if="{{aiComment}}">
+        <view class="ai-avatar">🤖</view>
+        <view class="ai-comment-content">
+          <view class="ai-comment-text">{{aiComment}}</view>
+          <view class="ai-comment-time">刚刚</view>
+        </view>
+      </view>
+      
+      <view class="ai-comment-generate" wx:if="{{!aiComment && !aiCommenting}}" bindtap="generateAIComment">
+        <view class="generate-text">让AI小助手来评价一下吧</view>
+        <view class="generate-icon">✨</view>
+      </view>
+
+      <view class="ai-commenting" wx:if="{{aiCommenting}}">
+        <view class="commenting-icon">
+          <view class="loading-dot"></view>
+          <view class="loading-dot"></view>
+          <view class="loading-dot"></view>
+        </view>
+        <view class="commenting-text">AI小助手正在思考中...</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作按钮 -->
+  <view class="bottom-actions">
+    <view class="action-btn secondary" bindtap="saveDraft">
+      <text class="btn-text">保存草稿</text>
+    </view>
+    <view class="action-btn primary" bindtap="publishDiary">
+      <text class="btn-text">发布日记</text>
+    </view>
+  </view>
+</view>
+
+<!-- 底部安全区域 -->
+<view class="safe-area-bottom"></view>

@@ -1,0 +1,256 @@
+<!--pages/preview/preview.wxml-->
+<view class="preview-container">
+  <!-- 预览页面头部 -->
+  <view class="preview-header">
+    <view class="header-title">小六日记 - 界面预览</view>
+    <view class="header-subtitle">橙色系温馨设计风格展示</view>
+  </view>
+
+  <!-- 功能预览导航 -->
+  <view class="preview-nav">
+    <view class="nav-item {{currentTab === 'list' ? 'active' : ''}}" bindtap="switchTab" data-tab="list">
+      <view class="nav-icon">📝</view>
+      <view class="nav-text">日记列表</view>
+    </view>
+    <view class="nav-item {{currentTab === 'write' ? 'active' : ''}}" bindtap="switchTab" data-tab="write">
+      <view class="nav-icon">✏️</view>
+      <view class="nav-text">写日记</view>
+    </view>
+    <view class="nav-item {{currentTab === 'detail' ? 'active' : ''}}" bindtap="switchTab" data-tab="detail">
+      <view class="nav-icon">👁️</view>
+      <view class="nav-text">日记详情</view>
+    </view>
+  </view>
+
+  <!-- 预览内容区域 -->
+  <view class="preview-content">
+    <!-- 日记列表预览 -->
+    <view class="preview-section {{currentTab === 'list' ? 'show' : 'hide'}}">
+      <view class="section-title">📱 日记列表页面</view>
+      <view class="preview-frame">
+        <!-- 模拟日记列表页面 -->
+        <view class="mock-page">
+          <!-- 头部 -->
+          <view class="mock-header">
+            <view class="mock-header-bg">
+              <view class="mock-title">我的日记</view>
+              <view class="mock-add-btn">+</view>
+            </view>
+          </view>
+          
+          <!-- 统计卡片 -->
+          <view class="mock-stats-card">
+            <view class="mock-stat-item">
+              <view class="mock-stat-number">15</view>
+              <view class="mock-stat-label">总日记</view>
+            </view>
+            <view class="mock-stat-item">
+              <view class="mock-stat-number">7</view>
+              <view class="mock-stat-label">连续天数</view>
+            </view>
+            <view class="mock-stat-item">
+              <view class="mock-stat-number">3</view>
+              <view class="mock-stat-label">本周</view>
+            </view>
+          </view>
+          
+          <!-- 日记列表 -->
+          <view class="mock-diary-list">
+            <view class="mock-diary-item">
+              <view class="mock-date-label">12/25</view>
+              <view class="mock-diary-content">
+                <view class="mock-mood-weather">😊 ☀️</view>
+                <view class="mock-diary-text">今天是圣诞节，收到了很多礼物...</view>
+                <view class="mock-diary-tags">
+                  <view class="mock-tag">开心</view>
+                  <view class="mock-tag">节日</view>
+                </view>
+              </view>
+            </view>
+            
+            <view class="mock-diary-item">
+              <view class="mock-date-label">12/24</view>
+              <view class="mock-diary-content">
+                <view class="mock-mood-weather">🤗 🌤️</view>
+                <view class="mock-diary-text">平安夜和家人一起包饺子...</view>
+                <view class="mock-diary-tags">
+                  <view class="mock-tag">温馨</view>
+                  <view class="mock-tag">家庭</view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="feature-list">
+        <view class="feature-item">✨ 朋友圈风格卡片布局</view>
+        <view class="feature-item">📊 成长统计数据展示</view>
+        <view class="feature-item">🏷️ 心情天气标签显示</view>
+        <view class="feature-item">🎨 橙色系温馨配色</view>
+      </view>
+    </view>
+
+    <!-- 写日记预览 -->
+    <view class="preview-section {{currentTab === 'write' ? 'show' : 'hide'}}">
+      <view class="section-title">✏️ 日记编辑页面</view>
+      <view class="preview-frame">
+        <!-- 模拟写日记页面 -->
+        <view class="mock-page">
+          <!-- 头部 -->
+          <view class="mock-header">
+            <view class="mock-header-bg">
+              <view class="mock-back-btn">←</view>
+              <view class="mock-title">写日记</view>
+              <view class="mock-draft-btn">草稿</view>
+            </view>
+          </view>
+          
+          <!-- 日期选择 -->
+          <view class="mock-date-picker">
+            <view class="mock-date">2024年12月25日</view>
+          </view>
+          
+          <!-- 心情天气选择 -->
+          <view class="mock-mood-weather-selector">
+            <view class="mock-selector-group">
+              <view class="mock-selector-title">今天心情</view>
+              <view class="mock-emoji-list">
+                <view class="mock-emoji active">😊</view>
+                <view class="mock-emoji">😢</view>
+                <view class="mock-emoji">😴</view>
+              </view>
+            </view>
+            <view class="mock-selector-group">
+              <view class="mock-selector-title">今天天气</view>
+              <view class="mock-emoji-list">
+                <view class="mock-emoji active">☀️</view>
+                <view class="mock-emoji">🌤️</view>
+                <view class="mock-emoji">🌧️</view>
+              </view>
+            </view>
+          </view>
+          
+          <!-- 内容输入 -->
+          <view class="mock-content-input">
+            <view class="mock-textarea">今天是圣诞节，收到了很多礼物，特别开心...</view>
+            <view class="mock-char-count">45/1000</view>
+          </view>
+          
+          <!-- AI配图功能 -->
+          <view class="mock-ai-section">
+            <view class="mock-ai-title">🎨 AI配图建议</view>
+            <view class="mock-ai-suggestions">
+              <view class="mock-suggestion">圣诞树</view>
+              <view class="mock-suggestion">礼物盒</view>
+              <view class="mock-suggestion">雪花</view>
+            </view>
+            <view class="mock-ai-btn">生成配图</view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="feature-list">
+        <view class="feature-item">🎨 AI配图功能入口</view>
+        <view class="feature-item">😊 优化的心情天气选择</view>
+        <view class="feature-item">📝 改进的文字输入体验</view>
+        <view class="feature-item">💾 草稿保存功能</view>
+      </view>
+    </view>
+
+    <!-- 日记详情预览 -->
+    <view class="preview-section {{currentTab === 'detail' ? 'show' : 'hide'}}">
+      <view class="section-title">👁️ 日记详情页面</view>
+      <view class="preview-frame">
+        <!-- 模拟日记详情页面 -->
+        <view class="mock-page">
+          <!-- 头部 -->
+          <view class="mock-header">
+            <view class="mock-header-bg">
+              <view class="mock-back-btn">←</view>
+              <view class="mock-title">日记详情</view>
+              <view class="mock-share-btn">分享</view>
+            </view>
+          </view>
+          
+          <!-- 日记卡片 -->
+          <view class="mock-diary-card">
+            <view class="mock-diary-date">2024年12月25日 星期三</view>
+            <view class="mock-diary-mood-weather">
+              <view class="mock-mood">😊 开心</view>
+              <view class="mock-weather">☀️ 晴天</view>
+            </view>
+            <view class="mock-diary-content-detail">
+              今天是圣诞节，收到了很多礼物，特别开心。和家人一起度过了温馨的时光，感觉生活真美好。
+            </view>
+            <view class="mock-diary-tags-detail">
+              <view class="mock-tag">开心</view>
+              <view class="mock-tag">节日</view>
+              <view class="mock-tag">家庭</view>
+            </view>
+          </view>
+          
+          <!-- AI评价卡片 -->
+          <view class="mock-ai-comment-card">
+            <view class="mock-ai-header">
+              <view class="mock-ai-avatar">🤖</view>
+              <view class="mock-ai-info">
+                <view class="mock-ai-name">AI小助手</view>
+                <view class="mock-ai-desc">温馨陪伴</view>
+              </view>
+            </view>
+            <view class="mock-ai-comment">
+              看到你今天这么开心，我也很高兴呢！圣诞节和家人在一起的时光总是特别珍贵，这些美好的回忆会伴随你一生。继续保持这份快乐吧！🎄✨
+            </view>
+            <view class="mock-ai-actions">
+              <view class="mock-like-btn">👍 12</view>
+              <view class="mock-regenerate-btn">🔄 重新生成</view>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="feature-list">
+        <view class="feature-item">🤖 AI智能评价功能</view>
+        <view class="feature-item">💬 温馨的AI陪伴体验</view>
+        <view class="feature-item">📊 日记统计信息</view>
+        <view class="feature-item">🔗 相关日记推荐</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设计说明 -->
+  <view class="design-notes">
+    <view class="notes-title">🎨 设计特色</view>
+    <view class="notes-content">
+      <view class="note-item">
+        <view class="note-icon">🧡</view>
+        <view class="note-text">温暖的橙色系配色方案，营造温馨友好的氛围</view>
+      </view>
+      <view class="note-item">
+        <view class="note-icon">🔄</view>
+        <view class="note-text">圆角卡片设计，适合儿童的友好界面</view>
+      </view>
+      <view class="note-item">
+        <view class="note-icon">🤖</view>
+        <view class="note-text">AI智能功能，提供配图建议和温馨评价</view>
+      </view>
+      <view class="note-item">
+        <view class="note-icon">📱</view>
+        <view class="note-text">朋友圈风格布局，熟悉的用户体验</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="preview-footer">
+    <view class="footer-btn" bindtap="goToList">
+      <view class="btn-icon">📝</view>
+      <view class="btn-text">体验日记列表</view>
+    </view>
+    <view class="footer-btn" bindtap="goToWrite">
+      <view class="btn-icon">✏️</view>
+      <view class="btn-text">开始写日记</view>
+    </view>
+  </view>
+</view>

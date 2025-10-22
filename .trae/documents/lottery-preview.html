@@ -1,0 +1,119 @@
+\u003c!DOCTYPE html\u003e
+\u003chtml lang="zh-CN"\u003e
+\u003chead\u003e
+    \u003cmeta charset="UTF-8"\u003e
+    \u003cmeta name="viewport" content="width=device-width, initial-scale=1.0"\u003e
+    \u003ctitle\u003e抽奖界面预览\u003c/title\u003e
+    \u003cstyle\u003e
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FCFAF7;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .phone-container {
+            max-width: 375px;
+            margin: 0 auto;
+            background: #000;
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .screen {
+            background: linear-gradient(135deg, #FF6B35 0%, #F5C754 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            height: 667px;
+            position: relative;
+        }
+
+        .content {
+            padding: 24px 16px;
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+
+        /* 抽奖大厅 */
+        .hall-title {
+            color: white;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .points-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .lottery-wheel {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            border: 10px solid #FFD700;
+            border-radius: 50%;
+            position: relative;
+            background: conic-gradient(#FF6B35 0% 16.6%, #4ECDC4 16.6% 33.3%, #95E1D3 33.3% 50%, #FFE66D 50% 66.6%, #A8E6CF 66.6% 83.3%, #FFB6C1 83.3% 100%);
+        }
+
+        /* 抽奖管理 */
+        .manage-screen {
+            background: #F8F9FA;
+        }
+
+        .manage-navbar {
+            background: white;
+            padding: 16px;
+            border-bottom: 1px solid #E5E5E5;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            padding: 16px;
+        }
+
+        .prize-list {
+            padding: 16px;
+        }
+    \u003c/style\u003e
+\u003c/head\u003e
+\u003cbody\u003e
+    \u003c!-- 抽奖大厅 --\u003e
+    \u003cdiv class="phone-container"\u003e
+        \u003cdiv class="screen"\u003e
+            \u003cdiv class="content"\u003e
+                \u003cdiv class="hall-title"\u003e\u003ch2\u003e抽奖大厅\u003c/h2\u003e\u003cp\u003e用积分抽取精美奖品\u003c/p\u003e\u003c/div\u003e
+                \u003cdiv class="points-card"\u003e💰 我的积分: 1250\u003c/div\u003e
+                \u003cdiv class="lottery-wheel"\u003e\u003c/div\u003e
+            \u003c/div\u003e
+        \u003c/div\u003e
+    \u003c/div\u003e
+
+    \u003c!-- 抽奖管理 --\u003e
+    \u003cdiv class="phone-container"\u003e
+        \u003cdiv class="screen manage-screen"\u003e
+            \u003cdiv class="manage-navbar"\u003e← 抽奖管理 ⚙️\u003c/div\u003e
+            \u003cdiv class="content"\u003e
+                \u003cdiv class="stats-grid"\u003e
+                    \u003cdiv\u003e📊今日抽奖: 120\u003c/div\u003e
+                    \u003cdiv\u003e💰消耗积分: 1200\u003c/div\u003e
+                    \u003cdiv\u003e🎁奖品数量: 8\u003c/div\u003e
+                \u003c/div\u003e
+                \u003cdiv class="prize-list"\u003e
+                    \u003cp\u003e🎁 奖品一览\u003c/p\u003e
+                    \u003cp\u003e💎 特殊奖品 | 1% | \u003cbutton\u003e编辑\u003c/button\u003e\u003c/p\u003e
+                    \u003cp\u003e🌟 稀有奖品 | 5% | \u003cbutton\u003e编辑\u003c/button\u003e\u003c/p\u003e
+                \u003c/div\u003e
+            \u003c/div\u003e
+        \u003c/div\u003e
+    \u003c/div\u003e
+\u003c/body\u003e
+\u003c/html\u003e

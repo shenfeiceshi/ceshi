@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务编辑页面预览</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FCFAF7;
+            padding: 20px;
+        }
+
+        .phone-container {
+            max-width: 375px;
+            margin: 0 auto;
+            background: #000;
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .screen {
+            background: #FCFAF7;
+            border-radius: 20px;
+            overflow: hidden;
+            height: 667px;
+            position: relative;
+        }
+
+        /* 状态栏 */
+        .status-bar {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8A65 100%);
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* 页面头部 */
+        .page-header {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8A65 100%);
+            text-align: center;
+            padding: 24px 16px;
+            color: #FFFFFF;
+        }
+
+        .header-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+        }
+
+        .header-desc {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 表单容器 */
+        .form-container {
+            background: #FFFFFF;
+            border-radius: 16px 16px 0 0;
+            padding: 24px 16px;
+            margin-top: -8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            min-height: calc(100% - 100px);
+            padding-bottom: 100px;
+        }
+
+        .form-item {
+            margin-bottom: 24px;
+        }
+
+        .form-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            font-size: 16px;
+            color: #1C170D;
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #F8F9FA;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #FF6B35;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px 16px;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #F8F9FA;
+            transition: all 0.3s ease;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: #FF6B35;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        /* 分类网格 - 2x2布局 */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .category-item {
+            text-align: center;
+            padding: 16px 12px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* 分类颜色 */
+        .category-item.life {
+            background: #95E1D3;
+            color: #FFFFFF;
+        }
+
+        .category-item.study {
+            background: #4ECDC4;
+            color: #FFFFFF;
+        }
+
+        .category-item.health {
+            background: #A8E6CF;
+            color: #FFFFFF;
+        }
+
+        .category-item.work {
+            background: #FF6B35;
+            color: #FFFFFF;
+        }
+
+        .category-item.selected {
+            border-color: #FF6B35;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        }
+
+        .category-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 8px;
+        }
+
+        .category-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* 积分选择器 */
+        .points-selector {
+            display: flex;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .points-item {
+            padding: 8px 16px;
+            background: #FFE66D;
+            color: #FF6B35;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+
+        .points-item.selected {
+            background: #FF6B35;
+            color: #FFFFFF;
+            border-color: #FF6B35;
+        }
+
+        /* 时间选择器 */
+        .time-picker {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            background: #F8F9FA;
+            margin-top: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .time-picker:active {
+            border-color: #FF6B35;
+            background: #FFFFFF;
+        }
+
+        .time-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+        }
+
+        .time-text {
+            flex: 1;
+            font-size: 16px;
+            color: #1C170D;
+        }
+
+        .arrow-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* 重复选项 */
+        .repeat-options {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .repeat-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px 8px;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #666666;
+            background: #F8F9FA;
+            transition: all 0.3s ease;
+            min-width: 60px;
+            cursor: pointer;
+        }
+
+        .repeat-item.selected {
+            border-color: #FF6B35;
+            background: #FF6B35;
+            color: #FFFFFF;
+        }
+
+        /* 操作按钮 */
+        .action-buttons {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: #FCFAF7;
+            border-top: 1px solid #E5E5E5;
+        }
+
+        .btn {
+            flex: 1;
+            text-align: center;
+            padding: 16px 0;
+            border-radius: 28px;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.2s ease-out;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid #E5E5E5;
+            color: #666666;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FF6B35 0%, #FF8A65 100%);
+            color: #FFFFFF;
+            box-shadow: 0 8px 16px rgba(255, 107, 53, 0.3);
+        }
+
+        .btn-secondary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 400px) {
+            .phone-container {
+                margin: 0;
+                border-radius: 0;
+                padding: 0;
+            }
+            
+            .screen {
+                border-radius: 0;
+                height: 100vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="screen">
+            <!-- 状态栏 -->
+            <div class="status-bar">
+                <span>21:59</span>
+                <span>100% 🔋</span>
+            </div>
+
+            <!-- 页面头部 -->
+            <div class="page-header">
+                <div class="header-title">新建任务</div>
+                <div class="header-desc">创建一个新的任务</div>
+            </div>
+
+            <!-- 表单容器 -->
+            <div class="form-container">
+                <!-- 任务名称 -->
+                <div class="form-item">
+                    <label class="form-label">任务名称</label>
+                    <input type="text" class="form-input" placeholder="请输入任务名称" value="早起打卡">
+                </div>
+
+                <!-- 任务分类 -->
+                <div class="form-item">
+                    <label class="form-label">任务分类</label>
+                    <div class="category-grid">
+                        <div class="category-item life selected">
+                            <div class="category-icon">🏠</div>
+                            <div class="category-name">生活习惯</div>
+                        </div>
+                        <div class="category-item study">
+                            <div class="category-icon">📚</div>
+                            <div class="category-name">学习成长</div>
+                        </div>
+                        <div class="category-item health">
+                            <div class="category-icon">🏃</div>
+                            <div class="category-name">健康运动</div>
+                        </div>
+                        <div class="category-item work">
+                            <div class="category-icon">💼</div>
+                            <div class="category-name">工作事务</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 完成奖励 -->
+                <div class="form-item">
+                    <label class="form-label">完成奖励</label>
+                    <div class="points-selector">
+                        <div class="points-item">+5积分</div>
+                        <div class="points-item selected">+10积分</div>
+                        <div class="points-item">+15积分</div>
+                        <div class="points-item">+20积分</div>
+                    </div>
+                </div>
+
+                <!-- 提醒时间 -->
+                <div class="form-item">
+                    <label class="form-label">提醒时间</label>
+                    <div class="time-picker">
+                        <span class="time-icon">🕐</span>
+                        <span class="time-text">07:00</span>
+                        <span class="arrow-icon">▶</span>
+                    </div>
+                </div>
+
+                <!-- 任务描述 -->
+                <div class="form-item">
+                    <label class="form-label">任务描述（可选）</label>
+                    <textarea class="form-textarea" placeholder="描述一下这个任务的具体内容...">每天早上7点准时起床，养成良好的作息习惯</textarea>
+                </div>
+
+                <!-- 重复设置 -->
+                <div class="form-item">
+                    <label class="form-label">重复频率</label>
+                    <div class="repeat-options">
+                        <div class="repeat-item selected">每天</div>
+                        <div class="repeat-item">工作日</div>
+                        <div class="repeat-item">周末</div>
+                        <div class="repeat-item">自定义</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button class="btn btn-secondary">取消</button>
+                <button class="btn btn-primary">创建任务</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 分类选择交互
+        document.querySelectorAll('.category-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.category-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // 积分选择交互
+        document.querySelectorAll('.points-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.points-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // 重复选项交互
+        document.querySelectorAll('.repeat-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.repeat-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+
+        // 时间选择器交互
+        document.querySelector('.time-picker').addEventListener('click', function() {
+            alert('打开时间选择器');
+        });
+
+        // 按钮交互
+        document.querySelector('.btn-secondary').addEventListener('click', function() {
+            alert('取消操作');
+        });
+
+        document.querySelector('.btn-primary').addEventListener('click', function() {
+            alert('创建任务成功！');
+        });
+    </script>
+</body>
+</html>

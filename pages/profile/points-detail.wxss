@@ -1,0 +1,469 @@
+/* 积分明细页面样式 */
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #fff5e6 0%, #ffe8cc 100%);
+  padding-bottom: 40rpx;
+}
+
+
+
+/* 积分统计概览 */
+.points-overview {
+  margin: 30rpx;
+  background: white;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 140, 0, 0.1);
+  border: 2rpx solid #ffe8cc;
+}
+
+.overview-main {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30rpx;
+}
+
+.overview-icon {
+  font-size: 60rpx;
+  margin-right: 20rpx;
+}
+
+.overview-content {
+  flex: 1;
+}
+
+.total-points {
+  display: block;
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #ff8c00;
+  line-height: 1.2;
+}
+
+.total-label {
+  font-size: 28rpx;
+  color: #666;
+  margin-top: 8rpx;
+}
+
+.overview-stats {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding-top: 30rpx;
+  border-top: 2rpx solid #f5f5f5;
+}
+
+.stat-item {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-value {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ff8c00;
+  margin-bottom: 8rpx;
+}
+
+.stat-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.stat-divider {
+  width: 2rpx;
+  height: 60rpx;
+  background: #f0f0f0;
+}
+
+/* 筛选工具栏 */
+.filter-toolbar {
+  margin: 0 30rpx 20rpx;
+}
+
+.filter-scroll {
+  white-space: nowrap;
+}
+
+.filter-tags {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+}
+
+.filter-tag {
+  display: inline-block;
+  padding: 16rpx 24rpx;
+  margin-right: 20rpx;
+  background: white;
+  border: 2rpx solid #ffe8cc;
+  border-radius: 50rpx;
+  font-size: 26rpx;
+  color: #666;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.filter-tag.active {
+  background: #ff8c00;
+  color: white;
+  border-color: #ff8c00;
+  transform: scale(1.05);
+}
+
+.filter-divider {
+  width: 2rpx;
+  height: 40rpx;
+  background: #e0e0e0;
+  margin: 0 20rpx;
+}
+
+/* 搜索框 */
+.search-container {
+  margin: 0 30rpx 30rpx;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 50rpx;
+  padding: 20rpx 30rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  border: 2rpx solid #ffe8cc;
+}
+
+.search-icon {
+  font-size: 32rpx;
+  margin-right: 20rpx;
+  color: #ff8c00;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+}
+
+.search-clear {
+  width: 40rpx;
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f0f0f0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.search-clear.show {
+  opacity: 1;
+}
+
+.clear-icon {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 积分记录列表 */
+.records-container {
+  margin: 0 30rpx;
+}
+
+.records-list {
+  background: white;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 8rpx 24rpx rgba(255, 140, 0, 0.1);
+  border: 2rpx solid #ffe8cc;
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+  padding: 30rpx;
+  border-bottom: 2rpx solid #f8f8f8;
+  transition: background-color 0.3s ease;
+}
+
+.record-item:last-child {
+  border-bottom: none;
+}
+
+.record-item:active {
+  background: #fafafa;
+}
+
+.record-icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 24rpx;
+  font-weight: bold;
+}
+
+.record-icon.earn {
+  background: linear-gradient(135deg, #4caf50, #66bb6a);
+  color: white;
+}
+
+.record-icon.spend {
+  background: linear-gradient(135deg, #f44336, #ef5350);
+  color: white;
+}
+
+.icon-text {
+  font-size: 32rpx;
+}
+
+.record-info {
+  flex: 1;
+  margin-right: 20rpx;
+}
+
+.record-source {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 8rpx;
+}
+
+.record-time {
+  font-size: 24rpx;
+  color: #999;
+  margin-bottom: 4rpx;
+}
+
+.record-desc {
+  font-size: 24rpx;
+  color: #666;
+  line-height: 1.4;
+}
+
+.record-amount {
+  text-align: right;
+}
+
+.amount-value {
+  display: block;
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-bottom: 8rpx;
+}
+
+.amount-value.earn {
+  color: #4caf50;
+}
+
+.amount-value.spend {
+  color: #f44336;
+}
+
+.balance-value {
+  font-size: 22rpx;
+  color: #999;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 120rpx 40rpx;
+  background: white;
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 140, 0, 0.1);
+  border: 2rpx solid #ffe8cc;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  display: block;
+  margin-bottom: 30rpx;
+}
+
+.empty-title {
+  display: block;
+  font-size: 32rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #999;
+  line-height: 1.5;
+}
+
+/* 加载更多 */
+.load-more {
+  text-align: center;
+  padding: 40rpx;
+}
+
+.load-text {
+  font-size: 26rpx;
+  color: #999;
+}
+
+/* 记录详情弹窗 */
+.detail-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.detail-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 600rpx;
+  background: white;
+  border-radius: 24rpx;
+  overflow: hidden;
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+}
+
+.detail-modal.show .modal-content {
+  transform: scale(1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30rpx;
+  background: #ff8c00;
+  color: white;
+}
+
+.modal-title {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.modal-close {
+  width: 50rpx;
+  height: 50rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.close-icon {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.modal-body {
+  padding: 30rpx;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 30rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #f5f5f5;
+}
+
+.detail-row:last-child {
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.detail-label {
+  width: 140rpx;
+  font-size: 28rpx;
+  color: #666;
+  font-weight: 500;
+}
+
+.detail-value {
+  flex: 1;
+  font-size: 28rpx;
+  color: #333;
+  line-height: 1.5;
+}
+
+.detail-value.desc {
+  color: #666;
+}
+
+.detail-value.link {
+  color: #ff8c00;
+  text-decoration: underline;
+}
+
+.detail-value.amount {
+  font-weight: bold;
+  font-size: 32rpx;
+}
+
+.detail-value.amount.earn {
+  color: #4caf50;
+}
+
+.detail-value.amount.spend {
+  color: #f44336;
+}
+
+.type-badge {
+  display: inline-block;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  color: white;
+  font-weight: 500;
+}
+
+.type-badge.earn {
+  background: #4caf50;
+}
+
+.type-badge.spend {
+  background: #f44336;
+}
+
+.modal-footer {
+  padding: 30rpx;
+  border-top: 2rpx solid #f5f5f5;
+}
+
+.modal-btn {
+  width: 100%;
+  padding: 24rpx;
+  background: #ff8c00;
+  color: white;
+  text-align: center;
+  border-radius: 50rpx;
+  font-size: 30rpx;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.modal-btn:active {
+  background: #e67e00;
+}

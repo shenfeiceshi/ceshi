@@ -1,0 +1,413 @@
+/* 奖品编辑页面样式 */
+.container {
+  padding: 20rpx;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+/* 页面标题 */
+.page-header {
+  text-align: center;
+  margin-bottom: 30rpx;
+}
+
+.header-title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 10rpx;
+}
+
+.header-subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* 表单区域 */
+.form-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  margin-bottom: 30rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.form-group {
+  margin-bottom: 40rpx;
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.label-icon {
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 12rpx;
+}
+
+/* 图片上传 */
+.image-upload {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4rpx dashed #ddd;
+  transition: all 0.3s ease;
+}
+
+.image-upload:active {
+  transform: scale(0.95);
+  border-color: #667eea;
+}
+
+.prize-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #999;
+}
+
+.upload-icon {
+  width: 60rpx;
+  height: 60rpx;
+  margin-bottom: 15rpx;
+  opacity: 0.6;
+}
+
+.upload-text {
+  font-size: 24rpx;
+}
+
+/* 表单输入 */
+.form-input {
+  width: 100%;
+  padding: 25rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 15rpx;
+  font-size: 28rpx;
+  background: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.form-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 6rpx rgba(102, 126, 234, 0.1);
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 25rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 15rpx;
+  font-size: 28rpx;
+  background: #ffffff;
+  min-height: 120rpx;
+  transition: all 0.3s ease;
+}
+
+.form-textarea:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 6rpx rgba(102, 126, 234, 0.1);
+}
+
+.input-counter {
+  text-align: right;
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 10rpx;
+}
+
+/* 类型选择器 */
+.type-selector {
+  display: flex;
+  gap: 20rpx;
+}
+
+.type-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30rpx 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 15rpx;
+  background: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.type-option.active {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  transform: scale(1.05);
+}
+
+.type-option:active {
+  transform: scale(0.95);
+}
+
+.type-icon {
+  width: 48rpx;
+  height: 48rpx;
+  margin-bottom: 15rpx;
+}
+
+.type-option text {
+  font-size: 24rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.type-option.active text {
+  color: #667eea;
+}
+
+/* 概率设置 */
+.probability-section {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.probability-slider {
+  flex: 1;
+}
+
+.probability-value {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #667eea;
+  min-width: 80rpx;
+  text-align: center;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 10rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.probability-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.tip-item {
+  font-size: 22rpx;
+  color: #666;
+  background: #f8f9fa;
+  padding: 8rpx 15rpx;
+  border-radius: 15rpx;
+}
+
+/* 库存设置 */
+.stock-section {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.stock-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx;
+  border: 2rpx solid #e0e0e0;
+  border-radius: 15rpx;
+  background: #ffffff;
+  transition: all 0.3s ease;
+}
+
+.stock-option.active {
+  border-color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.option-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 10rpx;
+}
+
+.stock-option text {
+  font-size: 26rpx;
+  color: #333;
+}
+
+.stock-option.active text {
+  color: #667eea;
+  font-weight: bold;
+}
+
+.stock-input {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+}
+
+.stock-unit, .value-unit {
+  font-size: 28rpx;
+  color: #666;
+  font-weight: bold;
+}
+
+/* 价值设置 */
+.value-section {
+  display: flex;
+  align-items: center;
+  gap: 15rpx;
+}
+
+/* 状态设置 */
+.status-section {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 15rpx;
+}
+
+.status-switch {
+  transform: scale(1.2);
+}
+
+.status-text {
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.status-tips {
+  font-size: 24rpx;
+  color: #666;
+  background: #f8f9fa;
+  padding: 15rpx 20rpx;
+  border-radius: 15rpx;
+}
+
+/* 操作按钮 */
+.actions-section {
+  display: flex;
+  gap: 20rpx;
+  margin-bottom: 30rpx;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30rpx;
+  border-radius: 15rpx;
+  font-size: 28rpx;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+
+.action-btn.primary {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: #ffffff;
+}
+
+.action-btn.secondary {
+  background: rgba(255, 255, 255, 0.9);
+  color: #667eea;
+}
+
+.action-btn:active {
+  transform: scale(0.95);
+}
+
+.btn-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 10rpx;
+}
+
+/* 预览区域 */
+.preview-section {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.preview-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+  text-align: center;
+}
+
+.preview-card {
+  display: flex;
+  align-items: center;
+  padding: 25rpx;
+  background: #f8f9fa;
+  border-radius: 15rpx;
+  border: 2rpx solid #e0e0e0;
+}
+
+.preview-image {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 15rpx;
+  margin-right: 20rpx;
+  background: #ffffff;
+}
+
+.preview-info {
+  flex: 1;
+}
+
+.preview-name {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.preview-desc {
+  font-size: 24rpx;
+  color: #666;
+  margin-bottom: 12rpx;
+}
+
+.preview-meta {
+  display: flex;
+  gap: 10rpx;
+}
+
+.meta-tag {
+  font-size: 20rpx;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+}
+
+/* 底部安全区域 */
+.safe-area-bottom {
+  height: env(safe-area-inset-bottom);
+  background: transparent;
+}

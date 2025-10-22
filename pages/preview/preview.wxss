@@ -1,0 +1,679 @@
+/* pages/preview/preview.wxss */
+
+/* 预览页面容器 */
+.preview-container {
+  min-height: 100vh;
+  background: var(--gradient-warm);
+  padding: var(--spacing-lg);
+}
+
+/* 预览页面头部 */
+.preview-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  padding: var(--spacing-xl) var(--spacing-lg);
+  background: var(--color-bg-card);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-lg);
+  border: var(--border-width-medium) solid var(--color-border);
+}
+
+.header-title {
+  font-size: var(--font-size-xxl);
+  font-weight: 700;
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: var(--spacing-sm);
+}
+
+.header-subtitle {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+}
+
+/* 功能预览导航 */
+.preview-nav {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: var(--spacing-xl);
+  background: var(--color-bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+  border: var(--border-width-medium) solid var(--color-border);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  flex: 1;
+  margin: 0 var(--spacing-xs);
+}
+
+.nav-item.active {
+  background: var(--gradient-primary);
+  transform: translateY(-4rpx);
+  box-shadow: var(--shadow-lg);
+}
+
+.nav-item.active .nav-text {
+  color: var(--color-text-white);
+}
+
+.nav-icon {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-xs);
+}
+
+.nav-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+/* 预览内容区域 */
+.preview-content {
+  margin-bottom: var(--spacing-xl);
+}
+
+.preview-section {
+  transition: all 0.3s ease;
+}
+
+.preview-section.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.preview-section.hide {
+  opacity: 0;
+  transform: translateY(20rpx);
+  position: absolute;
+  left: -9999rpx;
+}
+
+.section-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-lg);
+  text-align: center;
+}
+
+/* 预览框架 */
+.preview-frame {
+  background: var(--color-bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-lg);
+  border: var(--border-width-medium) solid var(--color-border);
+  margin-bottom: var(--spacing-lg);
+  overflow: hidden;
+}
+
+/* 模拟页面样式 */
+.mock-page {
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: var(--border-width-thin) solid var(--color-border-light);
+}
+
+/* 模拟头部 */
+.mock-header {
+  position: relative;
+}
+
+.mock-header-bg {
+  background: var(--gradient-primary);
+  padding: var(--spacing-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--color-text-white);
+}
+
+.mock-title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  flex: 1;
+  text-align: center;
+}
+
+.mock-back-btn,
+.mock-add-btn,
+.mock-draft-btn,
+.mock-share-btn {
+  width: 60rpx;
+  height: 60rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--border-radius-round);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+}
+
+/* 模拟统计卡片 */
+.mock-stats-card {
+  display: flex;
+  justify-content: space-around;
+  background: var(--color-bg-card);
+  margin: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: var(--border-width-thin) solid var(--color-border);
+}
+
+.mock-stat-item {
+  text-align: center;
+}
+
+.mock-stat-number {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.mock-stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+/* 模拟日记列表 */
+.mock-diary-list {
+  padding: 0 var(--spacing-lg) var(--spacing-lg);
+}
+
+.mock-diary-item {
+  display: flex;
+  background: var(--color-bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  box-shadow: var(--shadow-sm);
+  border: var(--border-width-thin) solid var(--color-border);
+}
+
+.mock-date-label {
+  width: 100rpx;
+  height: 100rpx;
+  background: var(--gradient-primary);
+  color: var(--color-text-white);
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  margin-right: var(--spacing-lg);
+  flex-shrink: 0;
+}
+
+.mock-diary-content {
+  flex: 1;
+}
+
+.mock-mood-weather {
+  font-size: var(--font-size-lg);
+  margin-bottom: var(--spacing-sm);
+}
+
+.mock-diary-text {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-sm);
+}
+
+.mock-diary-tags {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.mock-tag {
+  background: var(--color-bg-orange-light);
+  color: var(--color-primary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-round);
+  font-size: var(--font-size-xs);
+  border: var(--border-width-thin) solid var(--color-border-medium);
+}
+
+/* 模拟日期选择器 */
+.mock-date-picker {
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  margin: var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  border: var(--border-width-thin) solid var(--color-border);
+}
+
+.mock-date {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* 模拟心情天气选择器 */
+.mock-mood-weather-selector {
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  margin: 0 var(--spacing-lg) var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: var(--border-width-thin) solid var(--color-border);
+}
+
+.mock-selector-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.mock-selector-group:last-child {
+  margin-bottom: 0;
+}
+
+.mock-selector-title {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 500;
+}
+
+.mock-emoji-list {
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.mock-emoji {
+  width: 80rpx;
+  height: 80rpx;
+  background: var(--color-bg-light);
+  border-radius: var(--border-radius-round);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xl);
+  border: var(--border-width-medium) solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.mock-emoji.active {
+  background: var(--gradient-primary);
+  border-color: var(--color-primary);
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+/* 模拟内容输入 */
+.mock-content-input {
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  margin: 0 var(--spacing-lg) var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: var(--border-width-thin) solid var(--color-border);
+}
+
+.mock-textarea {
+  background: var(--color-bg-light);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-lg);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  min-height: 200rpx;
+  border: var(--border-width-thin) solid var(--color-border);
+  margin-bottom: var(--spacing-sm);
+}
+
+.mock-char-count {
+  text-align: right;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+/* 模拟AI功能区 */
+.mock-ai-section {
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  margin: 0 var(--spacing-lg) var(--spacing-lg);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: var(--border-width-thin) solid var(--color-border);
+}
+
+.mock-ai-title {
+  font-size: var(--font-size-md);
+  color: var(--color-primary);
+  margin-bottom: var(--spacing-md);
+  font-weight: 600;
+}
+
+.mock-ai-suggestions {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.mock-suggestion {
+  background: var(--color-bg-orange-light);
+  color: var(--color-primary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-round);
+  font-size: var(--font-size-sm);
+  border: var(--border-width-thin) solid var(--color-border-medium);
+}
+
+.mock-ai-btn {
+  background: var(--gradient-primary);
+  color: var(--color-text-white);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  text-align: center;
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+}
+
+/* 模拟日记卡片 */
+.mock-diary-card {
+  background: var(--color-bg-card);
+  margin: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  border: var(--border-width-medium) solid var(--color-border);
+}
+
+.mock-diary-date {
+  font-size: var(--font-size-lg);
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  text-align: center;
+}
+
+.mock-diary-mood-weather {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-bg-orange-light);
+  border-radius: var(--border-radius-md);
+}
+
+.mock-mood,
+.mock-weather {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+}
+
+.mock-diary-content-detail {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  line-height: 1.8;
+  margin-bottom: var(--spacing-lg);
+  text-align: justify;
+}
+
+.mock-diary-tags-detail {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-sm);
+}
+
+/* 模拟AI评价卡片 */
+.mock-ai-comment-card {
+  background: var(--color-bg-card);
+  margin: 0 var(--spacing-lg) var(--spacing-lg);
+  padding: var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-md);
+  border: var(--border-width-medium) solid rgba(255, 107, 53, 0.1);
+}
+
+.mock-ai-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.mock-ai-avatar {
+  width: var(--avatar-size-md);
+  height: var(--avatar-size-md);
+  background: var(--gradient-primary);
+  border-radius: var(--border-radius-round);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  margin-right: var(--spacing-md);
+}
+
+.mock-ai-info {
+  flex: 1;
+}
+
+.mock-ai-name {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.mock-ai-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.mock-ai-comment {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  line-height: 1.8;
+  margin-bottom: var(--spacing-lg);
+  background: var(--color-bg-orange-light);
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-md);
+  border-left: var(--border-width-thick) solid var(--color-primary);
+}
+
+.mock-ai-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mock-like-btn,
+.mock-regenerate-btn {
+  background: var(--color-bg-light);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-round);
+  font-size: var(--font-size-sm);
+  border: var(--border-width-thin) solid var(--color-border);
+}
+
+/* 功能特色列表 */
+.feature-list {
+  background: var(--color-bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  border: var(--border-width-medium) solid var(--color-border);
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-md) 0;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  border-bottom: var(--border-width-thin) solid var(--color-border-light);
+}
+
+.feature-item:last-child {
+  border-bottom: none;
+}
+
+/* 设计说明 */
+.design-notes {
+  background: var(--color-bg-card);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-lg);
+  border: var(--border-width-medium) solid var(--color-border);
+  margin-bottom: var(--spacing-xl);
+}
+
+.notes-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--color-primary);
+  text-align: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.notes-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.note-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--spacing-md);
+}
+
+.note-icon {
+  width: 60rpx;
+  height: 60rpx;
+  background: var(--gradient-primary);
+  border-radius: var(--border-radius-round);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+}
+
+.note-text {
+  flex: 1;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  line-height: 1.6;
+  padding-top: var(--spacing-sm);
+}
+
+/* 底部操作 */
+.preview-footer {
+  display: flex;
+  gap: var(--spacing-lg);
+  justify-content: center;
+}
+
+.footer-btn {
+  background: var(--gradient-primary);
+  color: var(--color-text-white);
+  padding: var(--spacing-lg) var(--spacing-xl);
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  flex: 1;
+  max-width: 300rpx;
+}
+
+.footer-btn:active {
+  transform: scale(0.98);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-icon {
+  font-size: var(--font-size-xl);
+}
+
+.btn-text {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+}
+
+/* 响应式适配 */
+@media (max-width: 375px) {
+  .preview-container {
+    padding: var(--spacing-md);
+  }
+  
+  .preview-header {
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .header-title {
+    font-size: var(--font-size-xl);
+  }
+  
+  .preview-nav {
+    margin-bottom: var(--spacing-lg);
+  }
+  
+  .nav-item {
+    padding: var(--spacing-sm);
+  }
+  
+  .preview-frame {
+    padding: var(--spacing-md);
+  }
+  
+  .design-notes {
+    padding: var(--spacing-lg);
+  }
+  
+  .preview-footer {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  .footer-btn {
+    max-width: none;
+  }
+}
+
+/* 动画效果 */
+.preview-section {
+  animation: slideUp 0.5s ease-out;
+}
+
+.mock-diary-item,
+.mock-ai-comment-card,
+.feature-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.nav-item:active {
+  transform: scale(0.95);
+}
+
+.footer-btn:hover {
+  transform: translateY(-4rpx);
+  box-shadow: var(--shadow-xl);
+}

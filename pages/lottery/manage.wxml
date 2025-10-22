@@ -1,0 +1,87 @@
+<!--抽奖管理页面-->
+<view class="page-container">
+  <!-- 导航栏 -->
+  <view class="navbar">
+    <view class="nav-left" bindtap="goBack">
+      <text class="nav-icon">←</text>
+      <text class="nav-title">抽奖管理</text>
+    </view>
+  </view>
+
+  <!-- 全局设置 -->
+  <view class="global-settings">
+    <view class="setting-item">
+      <text class="setting-label">每轮抽奖消耗积分</text>
+      <view class="setting-input-group">
+        <input class="setting-input" type="number" value="{{lotteryCost}}" bindinput="onCostInput" />
+        <text class="setting-unit">积分</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 奖品管理 -->
+  <view class="prize-management">
+    <view class="section-header">
+      <text class="section-title">🎁 奖品管理</text>
+      <view class="add-btn" bindtap="addPrize">
+        <text class="add-icon">+</text>
+        <text class="add-text">添加奖品</text>
+      </view>
+    </view>
+    
+    <view class="prize-list">
+      <view class="prize-item" wx:for="{{prizeList}}" wx:key="id">
+        <text class="prize-emoji">{{item.emoji}}</text>
+        <view class="prize-info">
+          <text class="prize-name">{{item.name}}</text>
+          <text class="prize-desc">{{item.description}}</text>
+        </view>
+        <view class="prize-probability">{{item.probability}}%</view>
+        <view class="prize-actions">
+          <view class="action-btn edit" bindtap="editPrize" data-id="{{item.id}}">
+            <text>✏️</text>
+          </view>
+          <view class="action-btn delete" bindtap="deletePrize" data-id="{{item.id}}">
+            <text>🗑️</text>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 添加/编辑奖品弹窗 -->
+<view class="prize-modal {{showPrizeModal ? 'show' : ''}}" bindtap="closePrizeModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">{{editMode === 'add' ? '添加奖品' : '编辑奖品'}}</text>
+      <text class="modal-close" bindtap="closePrizeModal">✕</text>
+    </view>
+    <view class="modal-body">
+      <view class="form-item">
+        <text class="form-label">奖品名称</text>
+        <input class="form-input" placeholder="请输入奖品名称" value="{{currentPrize.name}}" bindinput="onNameInput"/>
+      </view>
+      <view class="form-item">
+        <text class="form-label">奖品描述</text>
+        <textarea class="form-textarea" placeholder="请输入奖品描述" value="{{currentPrize.description}}" bindinput="onDescInput"/>
+      </view>
+      <view class="form-item">
+        <text class="form-label">中奖概率 (%)</text>
+        <input class="form-input" type="number" placeholder="请输入概率" value="{{currentPrize.probability}}" bindinput="onProbabilityInput"/>
+      </view>
+      <view class="form-item">
+        <text class="form-label">奖品图标</text>
+        <view class="emoji-selector">
+          <text class="emoji-item {{currentPrize.emoji === item ? 'selected' : ''}}" 
+                wx:for="{{emojiList}}" wx:key="*this"
+                bindtap="selectEmoji" data-emoji="{{item}}">{{item}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="modal-footer">
+      <view class="modal-btn cancel" bindtap="closePrizeModal">取消</view>
+      <view class="modal-btn confirm" bindtap="confirmPrize">{{editMode === 'add' ? '添加' : '保存'}}</view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,193 @@
+<!--积分明细页面-->
+<view class="page-container">
+
+  <!-- 积分统计概览 -->
+  <view class="points-overview">
+    <view class="overview-main">
+      <text class="overview-icon">💰</text>
+      <view class="overview-content">
+        <text class="total-points">{{pointsStats.totalPoints}}</text>
+        <text class="total-label">当前总积分</text>
+      </view>
+    </view>
+    
+    <view class="overview-stats">
+      <view class="stat-item">
+        <text class="stat-value">+{{pointsStats.monthlyEarned}}</text>
+        <text class="stat-label">本月获得</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">-{{pointsStats.monthlySpent}}</text>
+        <text class="stat-label">本月使用</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 筛选工具栏 -->
+  <view class="filter-toolbar">
+    <scroll-view class="filter-scroll" scroll-x="true">
+      <view class="filter-tags">
+        <!-- 时间筛选 -->
+        <view class="filter-tag {{timeFilter === 'all' ? 'active' : ''}}" 
+              bindtap="setTimeFilter" data-filter="all">
+          全部
+        </view>
+        <view class="filter-tag {{timeFilter === 'today' ? 'active' : ''}}" 
+              bindtap="setTimeFilter" data-filter="today">
+          今天
+        </view>
+        <view class="filter-tag {{timeFilter === 'week' ? 'active' : ''}}" 
+              bindtap="setTimeFilter" data-filter="week">
+          本周
+        </view>
+        <view class="filter-tag {{timeFilter === 'month' ? 'active' : ''}}" 
+              bindtap="setTimeFilter" data-filter="month">
+          本月
+        </view>
+        
+        <!-- 类型筛选 -->
+        <view class="filter-divider"></view>
+        <view class="filter-tag {{typeFilter === 'all' ? 'active' : ''}}" 
+              bindtap="setTypeFilter" data-filter="all">
+          全部类型
+        </view>
+        <view class="filter-tag {{typeFilter === 'earn' ? 'active' : ''}}" 
+              bindtap="setTypeFilter" data-filter="earn">
+          获得
+        </view>
+        <view class="filter-tag {{typeFilter === 'spend' ? 'active' : ''}}" 
+              bindtap="setTypeFilter" data-filter="spend">
+          使用
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 搜索框 -->
+  <view class="search-container">
+    <view class="search-box">
+      <text class="search-icon">🔍</text>
+      <input class="search-input" 
+             placeholder="搜索积分记录" 
+             value="{{searchKeyword}}"
+             bindinput="onSearchInput" />
+      <view class="search-clear {{searchKeyword ? 'show' : ''}}" 
+            bindtap="clearSearch">
+        <text class="clear-icon">×</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 积分记录列表 -->
+  <view class="records-container">
+    <view class="records-list" wx:if="{{filteredRecords.length > 0}}">
+      <view class="record-item" 
+            wx:for="{{filteredRecords}}" 
+            wx:key="id"
+            bindtap="viewRecordDetail" 
+            data-record="{{item}}">
+        
+        <!-- 记录类型图标 -->
+        <view class="record-icon {{item.type === 'earn' ? 'earn' : 'spend'}}">
+          <text class="icon-text">{{item.type === 'earn' ? '+' : '-'}}</text>
+        </view>
+        
+        <!-- 记录信息 -->
+        <view class="record-info">
+          <view class="record-source">{{item.source}}</view>
+          <view class="record-time">{{item.date}} {{item.time}}</view>
+          <view class="record-desc" wx:if="{{item.description}}">{{item.description}}</view>
+        </view>
+        
+        <!-- 积分数量和余额 -->
+        <view class="record-amount">
+          <text class="amount-value {{item.type === 'earn' ? 'earn' : 'spend'}}">
+            {{item.type === 'earn' ? '+' : '-'}}{{item.amount}}
+          </text>
+          <text class="balance-value">余额: {{item.balance}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{filteredRecords.length === 0}}">
+      <text class="empty-icon">📊</text>
+      <text class="empty-title">暂无积分记录</text>
+      <text class="empty-desc">{{searchKeyword ? '没有找到相关记录' : '还没有积分记录哦~'}}</text>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && filteredRecords.length > 0}}">
+    <text class="load-text">{{loading ? '加载中...' : '上拉加载更多'}}</text>
+  </view>
+</view>
+
+<!-- 记录详情弹窗 -->
+<view class="detail-modal {{showDetailModal ? 'show' : ''}}" bindtap="closeDetailModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">积分记录详情</text>
+      <view class="modal-close" bindtap="closeDetailModal">
+        <text class="close-icon">×</text>
+      </view>
+    </view>
+    
+    <view class="modal-body" wx:if="{{selectedRecord}}">
+      <!-- 记录类型 -->
+      <view class="detail-row">
+        <text class="detail-label">类型</text>
+        <view class="detail-value">
+          <text class="type-badge {{selectedRecord.type === 'earn' ? 'earn' : 'spend'}}">
+            {{selectedRecord.type === 'earn' ? '积分获得' : '积分使用'}}
+          </text>
+        </view>
+      </view>
+      
+      <!-- 积分数量 -->
+      <view class="detail-row">
+        <text class="detail-label">数量</text>
+        <text class="detail-value amount {{selectedRecord.type === 'earn' ? 'earn' : 'spend'}}">
+          {{selectedRecord.type === 'earn' ? '+' : '-'}}{{selectedRecord.amount}}
+        </text>
+      </view>
+      
+      <!-- 来源/用途 -->
+      <view class="detail-row">
+        <text class="detail-label">{{selectedRecord.type === 'earn' ? '来源' : '用途'}}</text>
+        <text class="detail-value">{{selectedRecord.source}}</text>
+      </view>
+      
+      <!-- 时间 -->
+      <view class="detail-row">
+        <text class="detail-label">时间</text>
+        <text class="detail-value">{{selectedRecord.date}} {{selectedRecord.time}}</text>
+      </view>
+      
+      <!-- 余额 -->
+      <view class="detail-row">
+        <text class="detail-label">操作后余额</text>
+        <text class="detail-value">{{selectedRecord.balance}}</text>
+      </view>
+      
+      <!-- 详细描述 -->
+      <view class="detail-row" wx:if="{{selectedRecord.description}}">
+        <text class="detail-label">详情</text>
+        <text class="detail-value desc">{{selectedRecord.description}}</text>
+      </view>
+      
+      <!-- 相关任务 -->
+      <view class="detail-row" wx:if="{{selectedRecord.taskId}}">
+        <text class="detail-label">相关任务</text>
+        <text class="detail-value link" bindtap="viewRelatedTask" data-id="{{selectedRecord.taskId}}">
+          查看任务详情 →
+        </text>
+      </view>
+    </view>
+    
+    <view class="modal-footer">
+      <view class="modal-btn" bindtap="closeDetailModal">知道了</view>
+    </view>
+  </view>
+</view>

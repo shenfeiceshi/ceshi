@@ -1,0 +1,81 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/auth/login/login",
+    "pages/auth/register/register",
+
+    "pages/tasks/list",
+    "pages/tasks/edit",
+    "pages/lottery/hall",
+    "pages/lottery/record",
+    "pages/lottery/manage",
+    "pages/lottery/edit",
+    "pages/lottery/badge",
+    "pages/diary/write",
+    "pages/diary/list",
+    "pages/diary/detail",
+    "pages/reports/weekly",
+    "pages/reports/monthly",
+    "pages/profile/points",
+    "pages/profile/points-detail",
+    "pages/profile/settings",
+    "pages/profile/account-security/account-security"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#FF6B35",
+    "navigationBarTitleText": "成长日记",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F8F9FA"
+  },
+  "tabBar": {
+    "color": "#A58C5B",
+    "selectedColor": "#1C170D",
+    "backgroundColor": "#FFF7EC",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "首页",
+        "iconPath": "images/tabbar/home.png",
+        "selectedIconPath": "images/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/tasks/list",
+        "text": "任务",
+        "iconPath": "images/tabbar/tasks.png",
+        "selectedIconPath": "images/tabbar/tasks-active.png"
+      },
+      {
+        "pagePath": "pages/lottery/hall",
+        "text": "抽奖",
+        "iconPath": "images/tabbar/lottery.png",
+        "selectedIconPath": "images/tabbar/lottery-active.png"
+      },
+      {
+        "pagePath": "pages/diary/list",
+        "text": "日记",
+        "iconPath": "images/tabbar/diary.png",
+        "selectedIconPath": "images/tabbar/diary-active.png"
+      },
+      {
+        "pagePath": "pages/profile/points",
+        "text": "我的",
+        "iconPath": "images/tabbar/profile.png",
+        "selectedIconPath": "images/tabbar/profile-active.png"
+      }
+    ]
+  },
+
+  "requiredBackgroundModes": ["audio"],
+  "networkTimeout": {
+    "request": 10000,
+    "downloadFile": 10000
+  },
+  "debug": true,
+  "cloud": true,
+  "style": "v2",
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

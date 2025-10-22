@@ -1,0 +1,65 @@
+<!--pages/test-user-data/test-user-data.wxml-->
+<view class="test-container">
+
+  <!-- 当前用户信息 -->
+  <view class="current-user">
+    <view class="section-title">当前用户</view>
+    <view class="user-info">
+      <text>用户ID: {{currentUserId}}</text>
+      <text wx:if="{{currentUserInfo.nickname}}">昵称: {{currentUserInfo.nickname}}</text>
+    </view>
+  </view>
+
+  <!-- 测试按钮区域 -->
+  <view class="test-buttons">
+    <view class="section-title">功能测试</view>
+    
+    <button class="test-btn" 
+            bindtap="testNewUser" 
+            disabled="{{isLoading}}"
+            loading="{{isLoading}}">
+      测试新用户数据清空
+    </button>
+    
+    <button class="test-btn" 
+            bindtap="testOldUser" 
+            disabled="{{isLoading}}"
+            loading="{{isLoading}}">
+      测试老用户数据保留
+    </button>
+    
+    <button class="test-btn" 
+            bindtap="testUserSwitch" 
+            disabled="{{isLoading}}"
+            loading="{{isLoading}}">
+      测试用户切换
+    </button>
+    
+    <button class="clear-btn" 
+            bindtap="clearResults" 
+            disabled="{{isLoading}}">
+      清空测试结果
+    </button>
+  </view>
+
+  <!-- 测试结果 -->
+  <view class="test-results" wx:if="{{testResults.length > 0}}">
+    <view class="section-title">测试结果</view>
+    
+    <view class="result-item" wx:for="{{testResults}}" wx:key="index">
+      <view class="result-header">
+        <text class="result-type">{{item.type}}</text>
+        <text class="result-status {{item.success ? 'success' : 'fail'}}">
+          {{item.success ? '✅ 通过' : '❌ 失败'}}
+        </text>
+        <text class="result-time">{{item.timestamp}}</text>
+      </view>
+      <view class="result-details">{{item.details}}</view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view class="empty-state" wx:if="{{testResults.length === 0}}">
+    <text>暂无测试结果，请点击上方按钮开始测试</text>
+  </view>
+</view>

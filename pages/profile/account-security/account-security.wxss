@@ -1,0 +1,188 @@
+/* 账号安全管理页面样式 */
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FF6B35 0%, #FFE66D 100%);
+  padding: 20rpx;
+}
+
+/* 顶部导航 */
+.nav-bar {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0 40rpx;
+  position: relative;
+}
+
+.nav-back {
+  position: absolute;
+  left: 0;
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  font-size: 32rpx;
+}
+
+.nav-back:active {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 36rpx;
+  font-weight: bold;
+  color: white;
+}
+
+/* 页面内容 */
+.content {
+  background: white;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  margin-bottom: 40rpx;
+  box-shadow: 0 8rpx 32rpx rgba(255, 107, 53, 0.15);
+}
+
+/* 密码修改区域 */
+.password-section {
+  width: 100%;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 40rpx;
+  display: flex;
+  align-items: center;
+}
+
+.section-icon {
+  width: 40rpx;
+  height: 40rpx;
+  margin-right: 20rpx;
+  color: #FF6B35;
+  font-size: 32rpx;
+}
+
+/* 表单样式 */
+.password-form {
+  width: 100%;
+}
+
+.form-item {
+  margin-bottom: 40rpx;
+}
+
+.form-label {
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 16rpx;
+  display: block;
+  font-weight: 500;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: #fafafa;
+  border: 2rpx solid #e8e8e8;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  transition: all 0.3s ease;
+}
+
+.input-wrapper:focus-within {
+  border-color: #FF6B35;
+  background: white;
+  box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
+}
+
+.input-icon {
+  width: 32rpx;
+  height: 32rpx;
+  color: #999;
+  margin-right: 20rpx;
+  font-size: 28rpx;
+}
+
+.form-input {
+  flex: 1;
+  padding: 24rpx 0;
+  font-size: 28rpx;
+  color: #333;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+
+.form-input::placeholder {
+  color: #999;
+}
+
+/* 错误提示 */
+.error-msg {
+  color: #ff4d4f;
+  font-size: 24rpx;
+  margin-top: 8rpx;
+  padding-left: 52rpx;
+}
+
+/* 提交按钮 */
+.submit-button {
+  width: 100%;
+  background: linear-gradient(135deg, #FF6B35, #FF8A65);
+  color: white;
+  border: none;
+  border-radius: 50rpx;
+  padding: 28rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  margin-top: 20rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.3);
+  transition: all 0.3s ease;
+}
+
+.submit-button:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 53, 0.3);
+}
+
+.submit-button:disabled {
+  background: #ccc;
+  box-shadow: none;
+  transform: none;
+}
+
+.submit-button::after {
+  border: none;
+}
+
+/* 响应式设计 */
+@media (max-width: 375px) {
+  .container {
+    padding: 16rpx;
+  }
+  
+  .content {
+    padding: 32rpx;
+  }
+  
+  .form-label {
+    font-size: 26rpx;
+  }
+  
+  .form-input {
+    font-size: 26rpx;
+  }
+  
+  .submit-button {
+    font-size: 30rpx;
+  }
+}

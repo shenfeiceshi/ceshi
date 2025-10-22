@@ -1,0 +1,345 @@
+<!--月报页面-->
+<view class="container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-content">
+      <view class="report-title">成长月报</view>
+      <view class="report-subtitle">回顾这个月的成长足迹</view>
+    </view>
+    <view class="header-actions">
+      <view class="action-btn" bindtap="shareReport">
+        <text class="action-icon">📤</text>
+      </view>
+      <view class="action-btn" bindtap="exportReport">
+        <text class="action-icon">📥</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 月份选择 -->
+  <view class="month-selector">
+    <view class="selector-btn" bindtap="prevMonth">
+      <text class="selector-icon">◀</text>
+    </view>
+    <view class="month-info">
+      <view class="month-name">{{monthName}}</view>
+      <view class="month-desc">{{year}}年</view>
+    </view>
+    <view class="selector-btn" bindtap="nextMonth">
+      <text class="selector-icon">▶</text>
+    </view>
+  </view>
+
+  <!-- 月度成就 -->
+  <view class="month-achievements">
+    <view class="achievements-title">
+      <text class="title-icon">🏆</text>
+      <text>月度成就</text>
+    </view>
+    <view class="achievements-grid">
+      <view class="achievement-item">
+        <view class="achievement-icon">📝</view>
+        <view class="achievement-number">{{monthData.totalDiaries}}</view>
+        <view class="achievement-label">篇日记</view>
+        <view class="achievement-change positive" wx:if="{{monthData.diaryChange > 0}}">
+          +{{monthData.diaryChange}}
+        </view>
+      </view>
+      <view class="achievement-item">
+        <view class="achievement-icon">✅</view>
+        <view class="achievement-number">{{monthData.totalTasks}}</view>
+        <view class="achievement-label">个任务</view>
+        <view class="achievement-change positive" wx:if="{{monthData.taskChange > 0}}">
+          +{{monthData.taskChange}}
+        </view>
+      </view>
+      <view class="achievement-item">
+        <view class="achievement-icon">🎯</view>
+        <view class="achievement-number">{{monthData.totalPoints}}</view>
+        <view class="achievement-label">积分</view>
+        <view class="achievement-change positive" wx:if="{{monthData.pointsChange > 0}}">
+          +{{monthData.pointsChange}}
+        </view>
+      </view>
+      <view class="achievement-item">
+        <view class="achievement-icon">🔥</view>
+        <view class="achievement-number">{{monthData.maxStreak}}</view>
+        <view class="achievement-label">最长连续</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 活跃度日历 -->
+  <view class="calendar-heatmap">
+    <view class="heatmap-title">
+      <text class="title-icon">📅</text>
+      <text>活跃度日历</text>
+    </view>
+    <view class="calendar-grid">
+      <view class="calendar-header">
+        <view class="weekday" wx:for="{{weekdays}}" wx:key="*this">{{item}}</view>
+      </view>
+      <view class="calendar-weeks">
+        <view class="calendar-week" wx:for="{{calendarWeeks}}" wx:key="week">
+          <view class="calendar-day {{day.isCurrentMonth ? '' : 'other-month'}} {{day.hasActivity ? 'active' : ''}}" 
+                wx:for="{{item.days}}" 
+                wx:for-item="day" 
+                wx:key="date"
+                style="background-color: {{day.activityColor}}"
+                bindtap="viewDayDetail"
+                data-date="{{day.date}}">
+            <text class="day-number">{{day.day}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="activity-legend">
+      <text class="legend-label">活跃度：</text>
+      <view class="legend-items">
+        <view class="legend-item" wx:for="{{activityLevels}}" wx:key="level">
+          <view class="legend-color" style="background-color: {{item.color}}"></view>
+          <text class="legend-text">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 心情分析 -->
+  <view class="mood-analysis">
+    <view class="analysis-title">
+      <text class="title-icon">😊</text>
+      <text>心情分析</text>
+    </view>
+    <view class="mood-chart-container">
+      <canvas class="mood-chart" canvas-id="monthlyMoodChart" disable-scroll="true"></canvas>
+    </view>
+    <view class="mood-stats">
+      <view class="mood-stat" wx:for="{{monthData.moodStats}}" wx:key="mood">
+        <view class="mood-icon">{{item.icon}}</view>
+        <view class="mood-info">
+          <view class="mood-name">{{item.name}}</view>
+          <view class="mood-count">{{item.count}}天</view>
+        </view>
+        <view class="mood-percentage">{{item.percentage}}%</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 成长时间线 -->
+  <view class="growth-timeline">
+    <view class="timeline-title">
+      <text class="title-icon">📈</text>
+      <text>成长时间线</text>
+    </view>
+    <view class="timeline-list">
+      <view class="timeline-item" wx:for="{{monthData.timeline}}" wx:key="id">
+        <view class="timeline-date">{{item.date}}</view>
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <view class="timeline-title">{{item.title}}</view>
+          <view class="timeline-desc">{{item.description}}</view>
+          <view class="timeline-tags">
+            <view class="timeline-tag" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">
+              {{tag}}
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 月度总结 -->
+  <view class="month-summary">
+    <view class="summary-title">
+      <text class="title-icon">📋</text>
+      <text>月度总结</text>
+    </view>
+    <view class="summary-content">
+      <view class="summary-section">
+        <view class="section-title">🎯 主要成就</view>
+        <view class="section-content">{{monthData.achievements}}</view>
+      </view>
+      <view class="summary-section">
+        <view class="section-title">📚 学习收获</view>
+        <view class="section-content">{{monthData.learnings}}</view>
+      </view>
+      <view class="summary-section">
+        <view class="section-title">🤔 反思改进</view>
+        <view class="section-content">{{monthData.reflections}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 排行榜 -->
+  <view class="monthly-ranking">
+    <view class="ranking-title">
+      <text class="title-icon">🏆</text>
+      <text>本月排行</text>
+    </view>
+    <view class="ranking-tabs">
+      <view class="tab-item {{activeTab === 'diary' ? 'active' : ''}}" 
+            bindtap="switchTab" 
+            data-tab="diary">日记榜</view>
+      <view class="tab-item {{activeTab === 'task' ? 'active' : ''}}" 
+            bindtap="switchTab" 
+            data-tab="task">任务榜</view>
+    </view>
+    <view class="ranking-list">
+      <view class="ranking-item" wx:for="{{currentRanking}}" wx:key="id">
+        <view class="rank-number">{{item.rank}}</view>
+        <view class="rank-avatar">
+          <text class="avatar-text">{{item.name.charAt(0)}}</text>
+        </view>
+        <view class="rank-info">
+          <view class="rank-name">{{item.name}}</view>
+          <view class="rank-score">{{item.score}}</view>
+        </view>
+        <view class="rank-badge" wx:if="{{item.rank <= 3}}">
+          <text class="badge-icon">{{item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : '🥉'}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 下月计划 -->
+  <view class="next-month-plan">
+    <view class="plan-title">
+      <text class="title-icon">📋</text>
+      <text>下月计划</text>
+    </view>
+    <view class="plan-categories">
+      <view class="plan-category" wx:for="{{monthData.nextMonthPlan}}" wx:key="category">
+        <view class="category-header">
+          <view class="category-icon">{{item.icon}}</view>
+          <view class="category-name">{{item.name}}</view>
+        </view>
+        <view class="category-goals">
+          <view class="goal-item" wx:for="{{item.goals}}" wx:for-item="goal" wx:key="id">
+            <view class="goal-checkbox" bindtap="togglePlanGoal" data-category="{{item.category}}" data-id="{{goal.id}}">
+              <text class="checkbox-icon">{{goal.completed ? '✅' : '⭕'}}</text>
+            </view>
+            <view class="goal-text">{{goal.text}}</view>
+            <view class="goal-reward">{{goal.points}}分</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="add-plan-btn" bindtap="addPlan">
+      <text class="add-icon">➕</text>
+      <text>添加计划</text>
+    </view>
+  </view>
+
+  <!-- 年度目标进度 -->
+  <view class="yearly-progress">
+    <view class="progress-title">
+      <text class="title-icon">🎯</text>
+      <text>年度目标进度</text>
+    </view>
+    <view class="yearly-goals">
+      <view class="yearly-goal" wx:for="{{monthData.yearlyGoals}}" wx:key="id">
+        <view class="goal-info">
+          <view class="goal-name">{{item.name}}</view>
+          <view class="goal-progress-text">{{item.current}}/{{item.target}}</view>
+        </view>
+        <view class="goal-progress-bar">
+          <view class="progress-fill" style="width: {{item.percentage}}%"></view>
+        </view>
+        <view class="goal-percentage">{{item.percentage}}%</view>
+      </view>
+    </view>
+    <view class="view-yearly-btn" bindtap="viewYearlyReport">
+      <text class="action-icon">📅</text>
+      <text>查看年报</text>
+    </view>
+  </view>
+
+  <!-- 分享选项 -->
+  <view class="share-section">
+    <view class="share-title">分享月报</view>
+    <view class="share-options">
+      <view class="share-option" bindtap="shareToFriend">
+        <text class="share-icon">👥</text>
+        <text class="share-text">分享给朋友</text>
+      </view>
+      <view class="share-option" bindtap="shareToMoments">
+        <text class="share-icon">🌟</text>
+        <text class="share-text">分享到朋友圈</text>
+      </view>
+      <view class="share-option" bindtap="saveToAlbum">
+        <text class="share-icon">💾</text>
+        <text class="share-text">保存到相册</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部操作 -->
+  <view class="bottom-actions">
+    <view class="action-item" bindtap="viewWeeklyReport">
+      <text class="action-icon">📊</text>
+      <text class="action-text">周报</text>
+    </view>
+    <view class="action-item" bindtap="exportReport">
+      <text class="action-icon">📥</text>
+      <text class="action-text">导出</text>
+    </view>
+    <view class="action-item" bindtap="viewHistory">
+      <text class="action-icon">📚</text>
+      <text class="action-text">历史报告</text>
+    </view>
+  </view>
+</view>
+
+<!-- 加载状态 -->
+<view class="loading-overlay" wx:if="{{loading}}">
+  <view class="loading-content">
+    <view class="loading-spinner"></view>
+    <view class="loading-text">正在生成月报...</view>
+  </view>
+</view>
+
+<!-- 日期详情弹窗 -->
+<view class="day-detail-modal" wx:if="{{showDayDetail}}">
+  <view class="modal-mask" bindtap="closeDayDetail"></view>
+  <view class="modal-content">
+    <view class="modal-header">
+      <view class="modal-title">{{selectedDay.dateDisplay}}</view>
+      <view class="modal-close" bindtap="closeDayDetail">×</view>
+    </view>
+    <view class="day-activities">
+      <view class="activity-item" wx:for="{{selectedDay.activities}}" wx:key="id">
+        <view class="activity-icon">{{item.icon}}</view>
+        <view class="activity-content">
+          <view class="activity-title">{{item.title}}</view>
+          <view class="activity-desc">{{item.description}}</view>
+        </view>
+        <view class="activity-points">+{{item.points}}</view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 分享弹窗 -->
+<view class="share-modal" wx:if="{{showShareModal}}">
+  <view class="modal-mask" bindtap="closeShareModal"></view>
+  <view class="modal-content">
+    <view class="modal-header">
+      <view class="modal-title">分享月报</view>
+      <view class="modal-close" bindtap="closeShareModal">×</view>
+    </view>
+    <view class="share-options">
+      <view class="share-option" bindtap="shareToFriend">
+        <image class="share-icon" src="/images/icons/wechat.png"></image>
+        <text class="share-text">分享给朋友</text>
+      </view>
+      <view class="share-option" bindtap="shareToMoments">
+        <image class="share-icon" src="/images/icons/moments.png"></image>
+        <text class="share-text">分享到朋友圈</text>
+      </view>
+      <view class="share-option" bindtap="saveToAlbum">
+        <image class="share-icon" src="/images/icons/save.png"></image>
+        <text class="share-text">保存到相册</text>
+      </view>
+    </view>
+  </view>
+</view>

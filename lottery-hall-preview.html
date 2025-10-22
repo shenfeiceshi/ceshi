@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽奖大厅预览</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FCFAF7;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .phone-container {
+            max-width: 375px;
+            margin: 0 auto;
+            background: #000;
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .screen {
+            background: linear-gradient(135deg, #FF6B35 0%, #F5C754 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            height: 667px;
+            position: relative;
+        }
+
+        .content {
+            padding: 16px;
+            height: calc(100% - 32px);
+            overflow-y: auto;
+        }
+
+        /* 页面标题 */
+        .page-header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-top: 10px;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 15px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 积分卡片 */
+        .points-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(5px);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .coin-icon {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        .points-text {
+            font-size: 15px;
+            color: #1C170D;
+            margin-right: 8px;
+        }
+
+        .points-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        /* 抽奖转盘 */
+        .lottery-wheel-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 24px;
+        }
+
+        .wheel-background {
+            position: relative;
+            width: 150px;
+            height: 150px;
+        }
+
+        .lottery-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 5px solid #FFD700;
+            background: conic-gradient(#FF6B35 0% 16.6%, #4ECDC4 16.6% 33.3%, #95E1D3 33.3% 50%, #FFE66D 50% 66.6%, #A8E6CF 66.6% 83.3%, #FFB6C1 83.3% 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid #FFD700;
+            z-index: 10;
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FF6B35 0%, #F5C754 100%);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+        }
+
+        .center-text {
+            font-size: 12px;
+            font-weight: bold;
+            color: #FFFFFF;
+            text-align: center;
+        }
+
+        .center-cost {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 2px;
+        }
+
+        /* 奖品展示 */
+        .prizes-section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .section-icon {
+            font-size: 16px;
+            margin-right: 6px;
+        }
+
+        .section-title-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #FFFFFF;
+        }
+
+        .prizes-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+        }
+
+        .prize-item {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 6px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .prize-image {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .prize-name {
+            font-size: 13px;
+            color: #1C170D;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .prize-points {
+            font-size: 12px;
+            color: #FF6B35;
+            font-weight: bold;
+        }
+
+        /* 最近中奖记录 */
+        .recent-records {
+            margin-bottom: 24px;
+        }
+
+        .records-list {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .record-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(229, 229, 229, 0.5);
+        }
+
+        .record-item:last-child {
+            border-bottom: none;
+        }
+
+        .record-avatar {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+
+        .record-info {
+            flex: 1;
+        }
+
+        .record-name {
+            font-size: 15px;
+            color: #1C170D;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .record-prize {
+            font-size: 13px;
+            color: #666666;
+        }
+
+        .record-time {
+            font-size: 12px;
+            color: #999999;
+        }
+
+        /* 底部操作按钮 */
+        .bottom-actions {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            min-width: 60px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: scale(0.95);
+        }
+
+        .btn-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .action-btn-text {
+            font-size: 12px;
+            color: #1C170D;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <div class="screen">
+            <div class="content">
+                <!-- 页面标题 -->
+                <div class="page-header">
+                    <div class="page-title">抽奖大厅</div>
+                    <div class="page-subtitle">用积分抽取精美奖品</div>
+                </div>
+
+                <!-- 用户积分 -->
+                <div class="points-header">
+                    <span class="coin-icon">💰</span>
+                    <span class="points-text">我的积分</span>
+                    <span class="points-value">1250</span>
+                </div>
+
+                <!-- 抽奖转盘 -->
+                <div class="lottery-wheel-container">
+                    <div class="wheel-background">
+                        <div class="lottery-wheel"></div>
+                        <div class="wheel-pointer"></div>
+                        <div class="wheel-center">
+                            <div class="center-text">开始抽奖</div>
+                            <div class="center-cost">消耗10积分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 奖品展示 -->
+                <div class="prizes-section">
+                    <div class="section-title">
+                        <span class="section-icon">🎁</span>
+                        <span class="section-title-text">奖品一览</span>
+                    </div>
+                    <div class="prizes-grid">
+                        <div class="prize-item">
+                            <div class="prize-image">💎</div>
+                            <div class="prize-name">特殊奖品</div>
+                            <div class="prize-points">100积分</div>
+                        </div>
+                        <div class="prize-item">
+                            <div class="prize-image">🌟</div>
+                            <div class="prize-name">稀有奖品</div>
+                            <div class="prize-points">50积分</div>
+                        </div>
+                        <div class="prize-item">
+                            <div class="prize-image">🎪</div>
+                            <div class="prize-name">普通奖品</div>
+                            <div class="prize-points">20积分</div>
+                        </div>
+                        <div class="prize-item">
+                            <div class="prize-image">🎈</div>
+                            <div class="prize-name">小奖品</div>
+                            <div class="prize-points">10积分</div>
+                        </div>
+                        <div class="prize-item">
+                            <div class="prize-image">🍭</div>
+                            <div class="prize-name">安慰奖</div>
+                            <div class="prize-points">5积分</div>
+                        </div>
+                        <div class="prize-item">
+                            <div class="prize-image">🎉</div>
+                            <div class="prize-name">谢谢参与</div>
+                            <div class="prize-points">0积分</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最近中奖记录 -->
+                <div class="recent-records">
+                    <div class="section-title">
+                        <span class="section-icon">🎉</span>
+                        <span class="section-title-text">最近中奖</span>
+                    </div>
+                    <div class="records-list">
+                        <div class="record-item">
+                            <span class="record-avatar">👤</span>
+                            <div class="record-info">
+                                <div class="record-name">小明</div>
+                                <div class="record-prize">获得了 特殊奖品</div>
+                            </div>
+                            <div class="record-time">3分钟前</div>
+                        </div>
+                        <div class="record-item">
+                            <span class="record-avatar">👤</span>
+                            <div class="record-info">
+                                <div class="record-name">小红</div>
+                                <div class="record-prize">获得了 稀有奖品</div>
+                            </div>
+                            <div class="record-time">10分钟前</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部操作按钮 -->
+                <div class="bottom-actions">
+                    <div class="action-btn">
+                        <span class="btn-icon">📊</span>
+                        <span class="action-btn-text">我的记录</span>
+                    </div>
+                    <div class="action-btn">
+                        <span class="btn-icon">🏆</span>
+                        <span class="action-btn-text">成就徽章</span>
+                    </div>
+                    <div class="action-btn">
+                        <span class="btn-icon">⚙️</span>
+                        <span class="action-btn-text">抽奖管理</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

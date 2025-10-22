@@ -1,0 +1,135 @@
+<!--小六日记列表页面 - 朋友圈风格-->
+<view class="page-container">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-content">
+      <view class="header-left">
+        <view class="page-title">小六日记</view>
+        <view class="page-subtitle">记录成长的每一天 ✨</view>
+      </view>
+      <view class="header-right">
+        <view class="add-btn" bindtap="goToWrite">
+          <text class="add-icon">+</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 成长统计卡片 -->
+  <view class="stats-card">
+    <view class="stats-item">
+      <view class="stats-number">{{totalDiaries}}</view>
+      <view class="stats-label">总日记</view>
+    </view>
+    <view class="stats-divider"></view>
+    <view class="stats-item">
+      <view class="stats-number">{{thisMonthDiaries}}</view>
+      <view class="stats-label">本月</view>
+    </view>
+    <view class="stats-divider"></view>
+    <view class="stats-item">
+      <view class="stats-number">{{continuousDays}}</view>
+      <view class="stats-label">连续天数</view>
+    </view>
+  </view>
+
+  <!-- 日记列表 - 朋友圈风格 -->
+  <view class="diary-timeline">
+    <view class="diary-card" 
+          wx:for="{{diaryList}}" 
+          wx:key="id"
+          bindtap="viewDiary" 
+          data-id="{{item.id}}">
+      
+      <!-- 左侧日期标签 -->
+      <view class="date-label">
+        <view class="date-day">{{item.day}}</view>
+        <view class="date-month">{{item.month}}</view>
+        <view class="date-year">{{item.year}}</view>
+      </view>
+
+      <!-- 右侧内容区域 -->
+      <view class="diary-content">
+        <!-- 心情天气标签 -->
+        <view class="mood-weather-bar">
+          <view class="mood-tag" wx:if="{{item.mood}}">
+            <text class="mood-emoji">{{item.moodEmoji}}</text>
+            <text class="mood-text">{{item.moodText}}</text>
+          </view>
+          <view class="weather-tag" wx:if="{{item.weather}}">
+            <text class="weather-emoji">{{item.weatherEmoji}}</text>
+            <text class="weather-text">{{item.weatherText}}</text>
+          </view>
+        </view>
+
+        <!-- 日记内容预览 -->
+        <view class="content-preview">{{item.content}}</view>
+
+        <!-- 图片预览 -->
+        <view class="images-preview" wx:if="{{item.images && item.images.length > 0}}">
+          <image class="preview-image" 
+                 wx:for="{{item.images}}" 
+                 wx:for-item="img" 
+                 wx:key="*this"
+                 src="{{img}}" 
+                 mode="aspectFill"
+                 wx:if="{{index < 3}}"></image>
+          <view class="more-images" wx:if="{{item.images.length > 3}}">
+            +{{item.images.length - 3}}
+          </view>
+        </view>
+
+        <!-- AI评价预览 -->
+        <view class="ai-comment-preview" wx:if="{{item.aiComment}}">
+          <view class="ai-avatar">🤖</view>
+          <view class="ai-comment-text">{{item.aiCommentPreview}}</view>
+        </view>
+
+        <!-- 标签 -->
+        <view class="tags-container" wx:if="{{item.tags && item.tags.length > 0}}">
+          <view class="tag-item" wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this">
+            #{{tag}}
+          </view>
+        </view>
+
+        <!-- 底部时间和操作 -->
+        <view class="diary-footer">
+          <view class="create-time">{{item.createTime}}</view>
+          <view class="action-buttons">
+            <view class="action-btn" bindtap="editDiary" data-id="{{item.id}}" catchtap="true">
+              <text class="action-icon">✏️</text>
+            </view>
+            <view class="action-btn" bindtap="shareDiary" data-id="{{item.id}}" catchtap="true">
+              <text class="action-icon">📤</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{diaryList.length === 0}}">
+      <view class="empty-icon">📝</view>
+      <view class="empty-title">还没有日记哦</view>
+      <view class="empty-desc">快来记录今天的美好时光吧！</view>
+      <view class="empty-action" bindtap="goToWrite">
+        <text class="action-text">写第一篇日记</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 加载更多 -->
+  <view class="load-more" wx:if="{{hasMore && diaryList.length > 0}}">
+    <view class="load-btn" bindtap="loadMore" wx:if="{{!loading}}">
+      <text>查看更多日记</text>
+    </view>
+    <view class="loading-indicator" wx:else>
+      <view class="loading-dot"></view>
+      <view class="loading-dot"></view>
+      <view class="loading-dot"></view>
+    </view>
+  </view>
+</view>
+
+<!-- 底部安全区域 -->
+<view class="safe-area-bottom"></view>

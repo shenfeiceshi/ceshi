@@ -1,0 +1,416 @@
+/* 抽奖管理页面样式 */
+.page-container {
+  min-height: 100vh;
+  background: #F8F9FA;
+  padding-bottom: 32rpx;
+}
+
+/* 导航栏 */
+.navbar {
+  background: #FFFFFF;
+  padding: 24rpx 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1rpx solid #E5E5E5;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
+.nav-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+  color: #1C170D;
+}
+
+.nav-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1C170D;
+}
+
+.nav-right .nav-icon {
+  font-size: 32rpx;
+  color: #666666;
+}
+
+/* 全局设置区域 */
+.settings-section {
+  margin: 32rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.setting-label {
+  font-size: 32rpx;
+  color: #1C170D;
+  font-weight: 500;
+}
+
+.setting-input {
+  width: 120rpx;
+  height: 60rpx;
+  border: 2rpx solid #E5E5E5;
+  border-radius: 8rpx;
+  text-align: center;
+  font-size: 28rpx;
+  color: #1C170D;
+}
+
+.setting-unit {
+  font-size: 24rpx;
+  color: #666666;
+  margin-left: 8rpx;
+}
+
+/* 奖品管理区域 */
+.prize-section {
+  margin: 0 32rpx;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24rpx;
+}
+
+.section-title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #1C170D;
+  display: flex;
+  align-items: center;
+}
+
+.section-icon {
+  font-size: 32rpx;
+  margin-right: 12rpx;
+  color: #FF6B35;
+}
+
+.add-btn {
+  background: #FF6B35;
+  color: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 12rpx 24rpx;
+  font-size: 28rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+}
+
+.add-btn::before {
+  content: '+';
+  font-size: 32rpx;
+  margin-right: 8rpx;
+}
+
+/* 奖品列表 */
+.prize-list {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
+}
+
+.prize-item {
+  display: flex;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+  transition: background-color 0.3s ease;
+}
+
+.prize-item:last-child {
+  border-bottom: none;
+}
+
+.prize-item:active {
+  background-color: #F8F9FA;
+}
+
+.prize-emoji {
+  font-size: 48rpx;
+  margin-right: 24rpx;
+  width: 60rpx;
+  text-align: center;
+}
+
+.prize-info {
+  flex: 1;
+  margin-right: 16rpx;
+}
+
+.prize-name {
+  font-size: 32rpx;
+  font-weight: 500;
+  color: #1C170D;
+  margin-bottom: 8rpx;
+}
+
+.prize-desc {
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.4;
+}
+
+.prize-probability {
+  background: #E8F5E8;
+  color: #4CAF50;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 500;
+  margin-right: 16rpx;
+}
+
+.prize-actions {
+  display: flex;
+  gap: 12rpx;
+}
+
+.action-btn {
+  padding: 12rpx 20rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.edit-btn {
+  background: #E3F2FD;
+  color: #2196F3;
+}
+
+.edit-btn:active {
+  background: #BBDEFB;
+}
+
+.delete-btn {
+  background: #FFEBEE;
+  color: #F44336;
+}
+
+.delete-btn:active {
+  background: #FFCDD2;
+}
+
+/* 奖品弹窗 */
+.prize-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.prize-modal.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal-content {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  width: 90%;
+  max-width: 600rpx;
+  max-height: 80vh;
+  overflow-y: auto;
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+}
+
+.prize-modal.show .modal-content {
+  transform: scale(1);
+}
+
+.modal-header {
+  padding: 32rpx 32rpx 24rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1C170D;
+}
+
+.close-btn {
+  font-size: 32rpx;
+  color: #666666;
+  background: none;
+  border: none;
+  padding: 8rpx;
+}
+
+.modal-body {
+  padding: 32rpx;
+}
+
+.form-group {
+  margin-bottom: 32rpx;
+}
+
+.form-label {
+  display: block;
+  font-size: 28rpx;
+  color: #1C170D;
+  margin-bottom: 12rpx;
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  height: 80rpx;
+  border: 2rpx solid #E5E5E5;
+  border-radius: 12rpx;
+  padding: 0 20rpx;
+  font-size: 28rpx;
+  color: #1C170D;
+  box-sizing: border-box;
+}
+
+.form-input:focus {
+  border-color: #FF6B35;
+}
+
+.form-textarea {
+  width: 100%;
+  min-height: 120rpx;
+  border: 2rpx solid #E5E5E5;
+  border-radius: 12rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+  color: #1C170D;
+  box-sizing: border-box;
+  resize: none;
+}
+
+.form-textarea:focus {
+  border-color: #FF6B35;
+}
+
+/* Emoji选择器 */
+.emoji-selector {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+
+.emoji-item {
+  width: 60rpx;
+  height: 60rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  border: 2rpx solid #E5E5E5;
+  border-radius: 12rpx;
+  background: #FFFFFF;
+  transition: all 0.3s ease;
+}
+
+.emoji-item.selected {
+  border-color: #FF6B35;
+  background: #FFF3F0;
+}
+
+.emoji-item:active {
+  transform: scale(0.9);
+}
+
+/* 概率输入 */
+.probability-input {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.probability-input .form-input {
+  flex: 1;
+}
+
+.probability-unit {
+  font-size: 28rpx;
+  color: #666666;
+}
+
+/* 弹窗底部按钮 */
+.modal-footer {
+  padding: 24rpx 32rpx 32rpx;
+  display: flex;
+  gap: 16rpx;
+}
+
+.modal-btn {
+  flex: 1;
+  height: 80rpx;
+  border-radius: 12rpx;
+  font-size: 32rpx;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn {
+  background: #F5F5F5;
+  color: #666666;
+}
+
+.cancel-btn:active {
+  background: #E0E0E0;
+}
+
+.confirm-btn {
+  background: #FF6B35;
+  color: #FFFFFF;
+}
+
+.confirm-btn:active {
+  background: #E55A2B;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 80rpx 32rpx;
+  color: #999999;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 24rpx;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  line-height: 1.5;
+}

@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>抽奖转盘动画测试</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #FF6B35 0%, #F5C754 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+
+        .page-container {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FFFFFF;
+            margin-bottom: 10px;
+        }
+
+        .page-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .points-header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .coin-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .points-text {
+            font-size: 16px;
+            color: #1C170D;
+            margin-right: 10px;
+        }
+
+        .points-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+
+        .lottery-wheel-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .wheel-background {
+            position: relative;
+            width: 300px;
+            height: 300px;
+        }
+
+        .lottery-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 5px solid #FFD700;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            background: conic-gradient(
+                #FF6B35 0deg 60deg,
+                #4ECDC4 60deg 120deg,
+                #FFE66D 120deg 180deg,
+                #95E1D3 180deg 240deg,
+                #FF8E8E 240deg 300deg,
+                #A8E6CF 300deg 360deg
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
+        }
+
+        .lottery-wheel.spinning {
+            animation: spin 2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(1800deg);
+            }
+        }
+
+        .wheel-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 20px solid #FFD700;
+            z-index: 10;
+        }
+
+        .wheel-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #FF6B35 0%, #F5C754 100%);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .wheel-center:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        .wheel-center:active {
+            transform: translate(-50%, -50%) scale(0.95);
+        }
+
+        .center-text {
+            font-size: 12px;
+            font-weight: bold;
+            color: #FFFFFF;
+            text-align: center;
+        }
+
+        .center-cost {
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 2px;
+        }
+
+        .status-text {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .test-btn {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+            transition: all 0.2s;
+        }
+
+        .test-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        .test-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-container">
+        <div class="page-header">
+            <div class="page-title">抽奖大厅</div>
+            <div class="page-subtitle">用积分抽取精美奖品</div>
+        </div>
+
+        <div class="points-header">
+            <span class="coin-icon">💰</span>
+            <span class="points-text">我的积分</span>
+            <span class="points-value" id="userPoints">100</span>
+        </div>
+
+        <div class="lottery-wheel-container">
+            <div class="wheel-background">
+                <div class="lottery-wheel" id="lotteryWheel">
+                    🌺 小红花<br>
+                    💰 金币<br>
+                    🏆 徽章<br>
+                    🌈 贴纸<br>
+                    🎁 礼物<br>
+                    ⭐ 奖励
+                </div>
+                <div class="wheel-pointer"></div>
+                <div class="wheel-center" onclick="startLottery()">
+                    <div class="center-text" id="centerText">开始抽奖</div>
+                    <div class="center-cost">消耗10积分</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="status-text" id="statusText">
+            点击中心按钮开始抽奖，测试转盘旋转动画效果
+        </div>
+
+        <div class="test-buttons">
+            <button class="test-btn" onclick="testAnimation()">测试动画</button>
+            <button class="test-btn" onclick="resetWheel()">重置转盘</button>
+        </div>
+    </div>
+
+    <script>
+        let isSpinning = false;
+        let userPoints = 100;
+
+        function startLottery() {
+            if (isSpinning) return;
+            
+            if (userPoints < 10) {
+                updateStatus('积分不足！');
+                return;
+            }
+
+            // 扣除积分
+            userPoints -= 10;
+            document.getElementById('userPoints').textContent = userPoints;
+
+            // 开始抽奖
+            isSpinning = true;
+            updateCenterText('抽奖中...');
+            updateStatus('转盘旋转中，请稍候...');
+
+            // 添加旋转动画
+            const wheel = document.getElementById('lotteryWheel');
+            wheel.classList.add('spinning');
+
+            // 2秒后停止动画并显示结果
+            setTimeout(() => {
+                wheel.classList.remove('spinning');
+                isSpinning = false;
+                updateCenterText('开始抽奖');
+                
+                // 模拟中奖结果
+                const prizes = ['🌺 小红花', '💰 金币奖励', '🏆 学习徽章', '🌈 彩虹贴纸', '🎁 神秘礼物', '⭐ 超级奖励'];
+                const wonPrize = prizes[Math.floor(Math.random() * prizes.length)];
+                updateStatus(`恭喜！您获得了 ${wonPrize}！`);
+            }, 2000);
+        }
+
+        function testAnimation() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            updateStatus('测试动画中...');
+            
+            const wheel = document.getElementById('lotteryWheel');
+            wheel.classList.add('spinning');
+            
+            setTimeout(() => {
+                wheel.classList.remove('spinning');
+                isSpinning = false;
+                updateStatus('动画测试完成！');
+            }, 2000);
+        }
+
+        function resetWheel() {
+            const wheel = document.getElementById('lotteryWheel');
+            wheel.classList.remove('spinning');
+            isSpinning = false;
+            userPoints = 100;
+            document.getElementById('userPoints').textContent = userPoints;
+            updateCenterText('开始抽奖');
+            updateStatus('转盘已重置，可以开始新的抽奖！');
+        }
+
+        function updateCenterText(text) {
+            document.getElementById('centerText').textContent = text;
+        }
+
+        function updateStatus(text) {
+            document.getElementById('statusText').textContent = text;
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('抽奖转盘动画测试页面已加载完成！');
+        });
+    </script>
+</body>
+</html>

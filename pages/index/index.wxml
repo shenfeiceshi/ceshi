@@ -1,0 +1,94 @@
+<!--首页 - 基于小六日记设计-->
+<view class="page-container">
+  <!-- 页面标题与设置 -->
+  <view class="page-header">
+    <view class="header-spacer"></view>
+    <view class="page-title">成长日记</view>
+    <view class="header-icon" bindtap="navigateTo" data-url="/pages/profile/settings">⚙️</view>
+  </view>
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="avatar-wrap">
+      <view class="avatar-circle">
+        <image class="avatar" src="{{userInfo.avatarUrl || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      </view>
+    </view>
+    <view class="user-info center">
+      <view class="username">{{userInfo.nickName || '小明'}}</view>
+      <view class="user-id" wx:if="{{hasUserInfo}}">ID: {{userInfo.id || '12345678'}}</view>
+      <view class="points-text" wx:if="{{hasUserInfo}}">当前积分: {{userInfo.points || 150}}</view>
+      <!-- 未登录状态显示登录按钮 -->
+      <view class="login-prompt" wx:if="{{!hasUserInfo}}">
+        <view class="login-text">登录后享受更多功能</view>
+        <view class="login-button" bindtap="goToLogin">立即登录</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 每日任务完成度 -->
+  <view class="task-progress-card">
+    <view class="progress-header">
+      <view class="progress-title">每日任务完成度</view>
+      <view class="progress-count">{{taskProgress.completed}}/{{taskProgress.total}}</view>
+    </view>
+    <view class="progress-bar-container">
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{(taskProgress.completed/taskProgress.total)*100}}%"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速打卡区域 -->
+  <view class="quick-checkin-card">
+    <view class="section-title">快速打卡</view>
+    <view class="checkin-grid" wx:if="{{quickTasks.length > 0}}">
+      <view class="checkin-item {{item.completed ? 'completed' : ''}}" 
+            wx:for="{{quickTasks}}" 
+            wx:key="id"
+            bindtap="onQuickCheckin"
+            data-id="{{item.id}}">
+        <view class="checkin-name">{{item.title}}</view>
+      </view>
+    </view>
+    <!-- 全部任务完成状态 -->
+    <view class="all-completed-state" wx:if="{{quickTasks.length === 0 && taskProgress.total > 0}}">
+      <view class="completed-icon">🎉</view>
+      <view class="completed-text">今日任务全部完成！</view>
+      <view class="completed-subtitle">你真棒，继续保持！</view>
+    </view>
+  </view>
+
+  <!-- 快速记录心情 -->
+  <view class="mood-section-card">
+    <view class="section-title">快速记录心情</view>
+    <view class="mood-grid">
+      <view class="mood-item {{currentMood === item.value ? 'selected' : ''}}"
+            wx:for="{{moods}}"
+            wx:key="value"
+            bindtap="onSelectMood"
+            data-mood="{{item.value}}">
+        <view class="mood-emoji">{{item.emoji}}</view>
+      </view>
+    </view>
+    <view class="mood-message">今天的你也很棒哦！</view>
+  </view>
+
+  <!-- 快捷操作 -->
+  <view class="quick-actions-card">
+    <view class="actions-grid">
+      <view class="action-item" bindtap="navigateTo" data-url="/pages/diary/write">
+        <view class="action-name">写日记</view>
+      </view>
+      <view class="action-item" bindtap="navigateTo" data-url="/pages/lottery/hall">
+        <view class="action-name">去抽奖</view>
+      </view>
+      <view class="action-item" bindtap="navigateTo" data-url="/pages/reports/weekly">
+        <view class="action-name">查看报告</view>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 引入Vant组件 -->
+<van-toast id="van-toast" />
+<van-dialog id="van-dialog" />

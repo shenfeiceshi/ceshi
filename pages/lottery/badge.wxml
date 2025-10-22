@@ -1,0 +1,184 @@
+<!--成就徽章页面-->
+<view class="page-container">
+  <!-- 页面标题 -->
+  <view class="page-header">
+    <view class="header-title">成就徽章</view>
+    <view class="header-subtitle">收集徽章，见证成长足迹</view>
+  </view>
+
+  <!-- 统计概览 -->
+  <view class="stats-section">
+    <view class="stats-card">
+      <view class="stat-item">
+        <view class="stat-number">{{collectedCount}}</view>
+        <view class="stat-label">已获得</view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <view class="stat-number">{{totalCount}}</view>
+        <view class="stat-label">总徽章</view>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <view class="stat-number">{{completionRate}}%</view>
+        <view class="stat-label">完成度</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 分类筛选 -->
+  <view class="filter-section">
+    <view class="filter-tabs">
+      <view class="filter-tab {{currentFilter === 'all' ? 'active' : ''}}" 
+            bindtap="switchFilter" data-filter="all">
+        全部
+      </view>
+      <view class="filter-tab {{currentFilter === 'collected' ? 'active' : ''}}" 
+            bindtap="switchFilter" data-filter="collected">
+        已获得
+      </view>
+      <view class="filter-tab {{currentFilter === 'uncollected' ? 'active' : ''}}" 
+            bindtap="switchFilter" data-filter="uncollected">
+        未获得
+      </view>
+      <view class="filter-tab {{currentFilter === 'recent' ? 'active' : ''}}" 
+            bindtap="switchFilter" data-filter="recent">
+        最新
+      </view>
+    </view>
+  </view>
+
+  <!-- 徽章网格 -->
+  <view class="badges-section">
+    <view class="badges-grid">
+      <view class="badge-item {{item.collected ? 'collected' : 'uncollected'}}" 
+            wx:for="{{filteredBadges}}" 
+            wx:key="id"
+            bindtap="showBadgeDetail" 
+            data-badge="{{item}}">
+        
+        <!-- 徽章图标 -->
+        <view class="badge-icon-wrapper">
+          <image class="badge-icon" src="{{item.icon}}"></image>
+          <view class="badge-glow" wx:if="{{item.collected}}"></view>
+          <view class="badge-lock" wx:if="{{!item.collected}}">
+            <image class="lock-icon" src="/images/icons/lock.png"></image>
+          </view>
+        </view>
+
+        <!-- 徽章信息 -->
+        <view class="badge-info">
+          <view class="badge-name">{{item.name}}</view>
+          <view class="badge-desc">{{item.description}}</view>
+          <view class="badge-progress" wx:if="{{!item.collected && item.progress}}">
+            <view class="progress-bar">
+              <view class="progress-fill" style="width: {{item.progress.current / item.progress.total * 100}}%"></view>
+            </view>
+            <view class="progress-text">{{item.progress.current}}/{{item.progress.total}}</view>
+          </view>
+          <view class="badge-date" wx:if="{{item.collected && item.collectedAt}}">
+            获得于 {{item.collectedAt}}
+          </view>
+        </view>
+
+        <!-- 稀有度标识 -->
+        <view class="rarity-tag {{item.rarity}}">{{rarityNames[item.rarity]}}</view>
+      </view>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{filteredBadges.length === 0}}">
+      <image class="empty-icon" src="/images/icons/empty-badge.png"></image>
+      <view class="empty-title">暂无徽章</view>
+      <view class="empty-desc">完成任务和挑战来获得徽章吧！</view>
+    </view>
+  </view>
+
+  <!-- 最近获得 -->
+  <view class="recent-section" wx:if="{{recentBadges.length > 0}}">
+    <view class="section-title">
+      <image class="title-icon" src="/images/icons/recent.png"></image>
+      <text>最近获得</text>
+    </view>
+    <scroll-view class="recent-scroll" scroll-x>
+      <view class="recent-list">
+        <view class="recent-item" 
+              wx:for="{{recentBadges}}" 
+              wx:key="id"
+              bindtap="showBadgeDetail" 
+              data-badge="{{item}}">
+          <image class="recent-icon" src="{{item.icon}}"></image>
+          <view class="recent-name">{{item.name}}</view>
+          <view class="recent-date">{{item.collectedAt}}</view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>
+
+<!-- 徽章详情弹窗 -->
+<view class="badge-modal {{showModal ? 'show' : ''}}" bindtap="closeModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <view class="modal-close" bindtap="closeModal">×</view>
+    </view>
+    
+    <view class="modal-body" wx:if="{{selectedBadge}}">
+      <!-- 徽章展示 -->
+      <view class="modal-badge">
+        <view class="modal-icon-wrapper {{selectedBadge.collected ? 'collected' : 'uncollected'}}">
+          <image class="modal-icon" src="{{selectedBadge.icon}}"></image>
+          <view class="modal-glow" wx:if="{{selectedBadge.collected}}"></view>
+          <view class="modal-lock" wx:if="{{!selectedBadge.collected}}">
+            <image class="lock-icon" src="/images/icons/lock.png"></image>
+          </view>
+        </view>
+        <view class="rarity-tag {{selectedBadge.rarity}} large">{{rarityNames[selectedBadge.rarity]}}</view>
+      </view>
+
+      <!-- 徽章信息 -->
+      <view class="modal-info">
+        <view class="modal-name">{{selectedBadge.name}}</view>
+        <view class="modal-desc">{{selectedBadge.description}}</view>
+        
+        <!-- 获得条件 -->
+        <view class="modal-condition">
+          <view class="condition-title">获得条件</view>
+          <view class="condition-text">{{selectedBadge.condition}}</view>
+        </view>
+
+        <!-- 进度显示 -->
+        <view class="modal-progress" wx:if="{{!selectedBadge.collected && selectedBadge.progress}}">
+          <view class="progress-title">完成进度</view>
+          <view class="progress-bar large">
+            <view class="progress-fill" style="width: {{selectedBadge.progress.current / selectedBadge.progress.total * 100}}%"></view>
+          </view>
+          <view class="progress-text large">{{selectedBadge.progress.current}}/{{selectedBadge.progress.total}}</view>
+        </view>
+
+        <!-- 获得时间 -->
+        <view class="modal-date" wx:if="{{selectedBadge.collected}}">
+          <view class="date-title">获得时间</view>
+          <view class="date-text">{{selectedBadge.collectedAt}}</view>
+        </view>
+
+        <!-- 奖励信息 -->
+        <view class="modal-reward" wx:if="{{selectedBadge.reward}}">
+          <view class="reward-title">徽章奖励</view>
+          <view class="reward-text">{{selectedBadge.reward}}</view>
+        </view>
+      </view>
+
+      <!-- 分享按钮 -->
+      <view class="modal-actions" wx:if="{{selectedBadge.collected}}">
+        <button class="share-btn" open-type="share">
+          <image class="btn-icon" src="/images/icons/share.png"></image>
+          <text>分享徽章</text>
+        </button>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- 底部安全区域 -->
+<view class="safe-area-bottom"></view>

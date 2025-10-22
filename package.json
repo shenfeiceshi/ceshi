@@ -1,0 +1,32 @@
+{
+  "name": "growth-diary-miniprogram",
+  "version": "1.0.0",
+  "description": "成长日记微信小程序",
+  "main": "app.js",
+  "scripts": {
+    "dev": "npm run build:npm",
+    "build:npm": "npm run build && npm run build:component",
+    "build": "echo 'Building...'",
+    "build:component": "echo 'Building components...'"
+  },
+  "keywords": [
+    "miniprogram",
+    "wechat",
+    "growth-diary",
+    "children"
+  ],
+  "author": "Growth Diary Team",
+  "license": "MIT",
+  "dependencies": {
+    "@vant/weapp": "^1.11.6"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "bugs": {
+    "url": ""
+  },
+  "homepage": ""
+}

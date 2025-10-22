@@ -1,0 +1,446 @@
+/* 小六日记列表页面样式 - 朋友圈风格 */
+.page-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FFF8F0 0%, #FFF5E6 100%);
+  padding-bottom: 120rpx;
+}
+
+/* 页面头部 */
+.page-header {
+  background: linear-gradient(135deg, #FF6B35 0%, #F5C754 100%);
+  padding: 60rpx 40rpx 40rpx;
+  border-radius: 0 0 40rpx 40rpx;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.2);
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left {
+  flex: 1;
+}
+
+.page-title {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #FFFFFF;
+  margin-bottom: 8rpx;
+}
+
+.page-subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.header-right {
+  margin-left: 40rpx;
+}
+
+.add-btn {
+  width: 80rpx;
+  height: 80rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10rpx);
+  border: 2rpx solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.add-btn:active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.add-icon {
+  font-size: 40rpx;
+  color: #FFFFFF;
+  font-weight: bold;
+}
+
+/* 成长统计卡片 */
+.stats-card {
+  margin: 40rpx 40rpx 0;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 8rpx 32rpx rgba(255, 107, 53, 0.1);
+  border: 2rpx solid rgba(255, 107, 53, 0.05);
+}
+
+.stats-item {
+  flex: 1;
+  text-align: center;
+}
+
+.stats-number {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: #FF6B35;
+  margin-bottom: 8rpx;
+}
+
+.stats-label {
+  font-size: 24rpx;
+  color: #999999;
+}
+
+.stats-divider {
+  width: 2rpx;
+  height: 60rpx;
+  background: #F0F0F0;
+  margin: 0 20rpx;
+}
+
+/* 日记时间轴 */
+.diary-timeline {
+  padding: 40rpx 40rpx 0;
+}
+
+/* 日记卡片 - 朋友圈风格 */
+.diary-card {
+  display: flex;
+  margin-bottom: 40rpx;
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid rgba(255, 107, 53, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.diary-card:hover {
+  transform: translateY(-4rpx);
+  box-shadow: 0 12rpx 40rpx rgba(255, 107, 53, 0.15);
+}
+
+.diary-card:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+}
+
+/* 左侧日期标签 */
+.date-label {
+  width: 120rpx;
+  margin-right: 32rpx;
+  text-align: center;
+  background: linear-gradient(135deg, #FF6B35 0%, #F5C754 100%);
+  border-radius: 20rpx;
+  padding: 24rpx 16rpx;
+  color: #FFFFFF;
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 53, 0.3);
+}
+
+.date-day {
+  font-size: 36rpx;
+  font-weight: bold;
+  line-height: 1;
+  margin-bottom: 4rpx;
+}
+
+.date-month {
+  font-size: 20rpx;
+  opacity: 0.9;
+  margin-bottom: 2rpx;
+}
+
+.date-year {
+  font-size: 18rpx;
+  opacity: 0.8;
+}
+
+/* 右侧内容区域 */
+.diary-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* 心情天气标签栏 */
+.mood-weather-bar {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.mood-tag, .weather-tag {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  background: rgba(255, 107, 53, 0.1);
+  border-radius: 20rpx;
+  padding: 8rpx 16rpx;
+  font-size: 22rpx;
+}
+
+.mood-emoji, .weather-emoji {
+  font-size: 24rpx;
+}
+
+.mood-text, .weather-text {
+  color: #FF6B35;
+  font-weight: 500;
+}
+
+/* 内容预览 */
+.content-preview {
+  font-size: 28rpx;
+  line-height: 1.6;
+  color: #333333;
+  margin-bottom: 20rpx;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+/* 图片预览 */
+.images-preview {
+  display: flex;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+  position: relative;
+}
+
+.preview-image {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 16rpx;
+  object-fit: cover;
+}
+
+.more-images {
+  position: absolute;
+  right: 12rpx;
+  bottom: 12rpx;
+  background: rgba(0, 0, 0, 0.6);
+  color: #FFFFFF;
+  font-size: 20rpx;
+  padding: 4rpx 8rpx;
+  border-radius: 8rpx;
+}
+
+/* AI评价预览 */
+.ai-comment-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+  background: rgba(245, 199, 84, 0.1);
+  border-radius: 20rpx;
+  padding: 20rpx;
+  margin-bottom: 20rpx;
+  border-left: 6rpx solid #F5C754;
+}
+
+.ai-avatar {
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+.ai-comment-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #666666;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* 标签容器 */
+.tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-bottom: 20rpx;
+}
+
+.tag-item {
+  background: rgba(255, 107, 53, 0.1);
+  color: #FF6B35;
+  font-size: 20rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 12rpx;
+  border: 1rpx solid rgba(255, 107, 53, 0.2);
+}
+
+/* 底部时间和操作 */
+.diary-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #F5F5F5;
+}
+
+.create-time {
+  font-size: 22rpx;
+  color: #999999;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 20rpx;
+}
+
+.action-btn {
+  width: 60rpx;
+  height: 60rpx;
+  background: rgba(255, 107, 53, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.action-btn:active {
+  transform: scale(0.9);
+  background: rgba(255, 107, 53, 0.2);
+}
+
+.action-icon {
+  font-size: 24rpx;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 120rpx 40rpx;
+}
+
+.empty-icon {
+  font-size: 120rpx;
+  margin-bottom: 40rpx;
+}
+
+.empty-title {
+  font-size: 32rpx;
+  color: #333333;
+  font-weight: 500;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  font-size: 26rpx;
+  color: #999999;
+  margin-bottom: 60rpx;
+  line-height: 1.5;
+}
+
+.empty-action {
+  background: linear-gradient(135deg, #FF6B35 0%, #F5C754 100%);
+  color: #FFFFFF;
+  font-size: 28rpx;
+  font-weight: 500;
+  padding: 24rpx 48rpx;
+  border-radius: 50rpx;
+  display: inline-block;
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.3);
+  transition: all 0.3s ease;
+}
+
+.empty-action:active {
+  transform: translateY(2rpx);
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.4);
+}
+
+.action-text {
+  color: #FFFFFF;
+}
+
+/* 加载更多 */
+.load-more {
+  padding: 40rpx;
+  text-align: center;
+}
+
+.load-btn {
+  background: rgba(255, 107, 53, 0.1);
+  color: #FF6B35;
+  font-size: 26rpx;
+  padding: 20rpx 40rpx;
+  border-radius: 50rpx;
+  border: 2rpx solid rgba(255, 107, 53, 0.2);
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.load-btn:active {
+  background: rgba(255, 107, 53, 0.2);
+  transform: scale(0.98);
+}
+
+/* 加载指示器 */
+.loading-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 20rpx;
+}
+
+.loading-dot {
+  width: 12rpx;
+  height: 12rpx;
+  background: #FF6B35;
+  border-radius: 50%;
+  animation: loading-bounce 1.4s ease-in-out infinite both;
+}
+
+.loading-dot:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.loading-dot:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes loading-bounce {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 底部安全区域 */
+.safe-area-bottom {
+  height: env(safe-area-inset-bottom);
+  background: transparent;
+}
+
+/* 响应式适配 */
+@media (max-width: 375px) {
+  .page-header {
+    padding: 50rpx 30rpx 30rpx;
+  }
+  
+  .stats-card {
+    margin: 30rpx 30rpx 0;
+    padding: 30rpx;
+  }
+  
+  .diary-timeline {
+    padding: 30rpx 30rpx 0;
+  }
+  
+  .diary-card {
+    padding: 24rpx;
+  }
+  
+  .date-label {
+    width: 100rpx;
+    margin-right: 24rpx;
+  }
+}
