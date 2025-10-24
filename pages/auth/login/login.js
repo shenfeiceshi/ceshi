@@ -2,26 +2,21 @@ const app = getApp();
 
 Page({
   data: {
-    // 表单数据
-    formData: {
-      account: '',
-      password: ''
-    },
-    
-    // 表单验证
-    errors: {
-      account: '',
-      password: ''
-    },
-    
     // 界面状态
     isLoading: false,
-    showPassword: false
+    // 表单数据
+    username: '',
+    password: '',
+    // 错误信息
+    errors: {
+      username: '',
+      password: ''
+    }
   },
 
   onLoad: function(options) {
     // 检查是否已经登录
-    if (app.checkLoginStatus && app.checkLoginStatus()) {
+    if (app.globalData.isLoggedIn) {
       wx.switchTab({
         url: '/pages/index/index'
       });
@@ -36,45 +31,35 @@ Page({
     }
   },
 
-  // 输入框内容变化
-  onInputChange: function(e) {
-    const field = e.currentTarget.dataset.field;
-    const value = e.detail.value;
-    
+  // 用户名输入
+  onUsernameInput: function(e) {
     this.setData({
-      [`formData.${field}`]: value,
-      [`errors.${field}`]: ''
+      username: e.detail.value,
+      'errors.username': ''
     });
   },
 
-  // 切换密码显示状态
-  togglePassword: function() {
+  // 密码输入
+  onPasswordInput: function(e) {
     this.setData({
-      showPassword: !this.data.showPassword
+      password: e.detail.value,
+      'errors.password': ''
     });
   },
 
   // 表单验证
   validateForm: function() {
-    const { account, password } = this.data.formData;
+    const { username, password } = this.data;
     const errors = {};
     let isValid = true;
 
-    // 验证账号
-    if (!account.trim()) {
-      errors.account = '请输入账号';
-      isValid = false;
-    } else if (account.length < 3) {
-      errors.account = '账号长度不能少于3位';
+    if (!username.trim()) {
+      errors.username = '请输入用户名';
       isValid = false;
     }
 
-    // 验证密码
-    if (!password) {
+    if (!password.trim()) {
       errors.password = '请输入密码';
-      isValid = false;
-    } else if (password.length < 6) {
-      errors.password = '密码长度不能少于6位';
       isValid = false;
     }
 
@@ -82,76 +67,37 @@ Page({
     return isValid;
   },
 
-  // 处理登录
+  // 账号密码登录
   handleLogin: function() {
+    if (this.data.isLoading) return;
+
+    // 表单验证
     if (!this.validateForm()) {
       return;
     }
 
     this.setData({ isLoading: true });
 
-    const { account, password } = this.data.formData;
-    const loginData = {
-      account: account.trim(),
-      password: password
-    };
+    const { username, password } = this.data;
 
-    // 引入用户数据管理工具
-    const authUtils = require('../../../utils/auth.js');
-
-    // 模拟登录API调用
-    setTimeout(() => {
-      // 这里应该调用实际的登录API
-      // app.userLogin(loginData, (err, data) => {
-      //   this.setData({ isLoading: false });
-      //   
-      //   if (err) {
-      //     wx.showToast({
-      //       title: err.message || '登录失败',
-      //       icon: 'none'
-      //     });
-      //     return;
-      //   }
-      //
-      //   // 登录成功后处理用户数据
-      //   this.handleLoginSuccess(data.userInfo);
-      // });
-
-      // 模拟登录成功 - 创建模拟用户信息
-      const mockUserInfo = {
-        id: account.trim(), // 使用账号作为用户ID
-        username: account.trim(),
-        account: account.trim(),
-        nickname: account.trim(),
-        avatar: '/images/default-avatar.png',
-        points: 0
-      };
-
-      // 处理登录成功
-      this.handleLoginSuccess(mockUserInfo);
-    }, 2000);
+    // 调用app.js中的登录方法
+    app.userLogin(username, password, (err, data) => {
+      this.setData({ isLoading: false });
+      
+      if (err) {
+        wx.showToast({
+          title: err.message || '登录失败',
+          icon: 'none'
+        });
+      } else {
+        this.handleLoginSuccess(data.userInfo);
+      }
+    });
   },
 
   // 处理登录成功
   handleLoginSuccess: function(userInfo) {
-    const authUtils = require('../../../utils/auth.js');
-    
     try {
-      // 保存用户登录信息
-      wx.setStorageSync('token', 'mock_token_' + Date.now());
-      wx.setStorageSync('userInfo', userInfo);
-      
-      // 管理用户数据（新用户清空数据，老用户保留数据）
-      const dataManageResult = authUtils.manageUserData(userInfo);
-      
-      if (dataManageResult) {
-        console.log('用户数据管理成功');
-      } else {
-        console.error('用户数据管理失败');
-      }
-      
-      this.setData({ isLoading: false });
-      
       wx.showToast({
         title: '登录成功',
         icon: 'success'
@@ -168,7 +114,6 @@ Page({
       
     } catch (error) {
       console.error('登录成功处理失败:', error);
-      this.setData({ isLoading: false });
       wx.showToast({
         title: '登录处理失败',
         icon: 'none'
@@ -182,8 +127,6 @@ Page({
       url: '/pages/auth/register/register'
     });
   },
-
-
 
   // 跳转到测试页面
   goToTest: function() {

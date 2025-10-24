@@ -2,89 +2,112 @@
 App({
   globalData: {
     userInfo: null,
-    authType: null, // 'password' | 'wechat'
-    token: null,
-    refreshToken: null,
-    cloudEnv: 'prod-8g0qvqhk7b8b8b8b' // 云环境ID
+    isLoggedIn: false,
+    token: null
   },
 
   onLaunch: function () {
-    // 检查登录状态
-    this.checkLoginStatus();
-    
     // 初始化云开发
     if (wx.cloud) {
       wx.cloud.init({
-        env: this.globalData.cloudEnv,
+        // 云开发环境ID
+        env: 'cloud1-7gqey5at68494012',
         traceUser: true
       });
     }
+    
+    // 检查登录状态
+    this.checkLoginStatus();
   },
 
   // 检查登录状态
   checkLoginStatus: function() {
+    const that = this;
+    
+    // 检查本地存储的登录信息
     try {
-      const token = wx.getStorageSync('auth_token');
       const userInfo = wx.getStorageSync('userInfo');
-      const authType = wx.getStorageSync('user_auth_type');
+      const loginToken = wx.getStorageSync('loginToken');
       
-      if (token && userInfo) {
-        this.globalData.token = token;
-        this.globalData.userInfo = userInfo;
-        this.globalData.authType = authType || 'password';
-        return true;
+      if (userInfo && loginToken) {
+        // 先设置为已登录状态，避免页面闪烁
+        that.globalData.userInfo = userInfo;
+        that.globalData.isLoggedIn = true;
+        that.globalData.token = loginToken;
+        
+        // 异步验证token是否有效
+        wx.cloud.callFunction({
+          name: 'verifyToken',
+          data: { token: loginToken },
+          success: function(res) {
+            if (res.result && res.result.success) {
+              // token有效，保持登录状态
+              console.log('Token验证成功，用户已登录');
+              // 更新用户信息（如果返回了新的用户信息）
+              if (res.result.data && res.result.data.userInfo) {
+                that.globalData.userInfo = res.result.data.userInfo;
+                wx.setStorageSync('userInfo', res.result.data.userInfo);
+              }
+            } else {
+              // token无效，清除登录信息
+              console.log('Token验证失败，清除登录信息');
+              that.clearAuth();
+            }
+          },
+          fail: function(error) {
+            console.error('验证token失败:', error);
+            // 网络错误时保持登录状态，避免频繁登出
+            console.log('网络错误，保持当前登录状态');
+          }
+        });
+      } else {
+        that.globalData.isLoggedIn = false;
+        that.globalData.userInfo = null;
+        that.globalData.token = null;
       }
     } catch (error) {
       console.error('检查登录状态失败:', error);
+      that.globalData.isLoggedIn = false;
+      that.globalData.userInfo = null;
+      that.globalData.token = null;
     }
-    
-    return false;
   },
 
-  // 设置token
-  setToken: function(token, refreshToken) {
+  // 设置用户信息
+  setUserInfo: function(userInfo, token) {
+    this.globalData.userInfo = userInfo;
+    this.globalData.isLoggedIn = true;
     this.globalData.token = token;
-    this.globalData.refreshToken = refreshToken;
     
     try {
-      wx.setStorageSync('auth_token', token);
-      if (refreshToken) {
-        wx.setStorageSync('refresh_token', refreshToken);
+      wx.setStorageSync('userInfo', userInfo);
+      if (token) {
+        wx.setStorageSync('loginToken', token);
       }
     } catch (error) {
-      console.error('保存token失败:', error);
+      console.error('保存用户信息失败:', error);
     }
   },
 
   // 清除登录信息
   clearAuth: function() {
-    this.globalData.token = null;
-    this.globalData.refreshToken = null;
     this.globalData.userInfo = null;
-    this.globalData.authType = null;
+    this.globalData.isLoggedIn = false;
+    this.globalData.token = null;
     
     try {
-      wx.removeStorageSync('auth_token');
-      wx.removeStorageSync('refresh_token');
       wx.removeStorageSync('userInfo');
-      wx.removeStorageSync('user_auth_type');
+      wx.removeStorageSync('loginToken');
     } catch (error) {
       console.error('清除登录信息失败:', error);
     }
   },
 
-  // 调用云函数API
-  callCloudAPI: function(functionName, method, data, callback) {
-    const that = this;
-    
+  // 调用云函数
+  callCloudFunction: function(functionName, data, callback) {
     wx.cloud.callFunction({
-      name: 'api',
-      data: {
-        action: functionName,
-        method: method,
-        data: data,
-        token: this.globalData.token
-      },
+      name: functionName,
+      data: data || {},
       success: function(res) {
         if (res.result && res.result.success) {
           if (callback) callback(null, res.result.data);
@@ -100,67 +123,47 @@ App({
     });
   },
 
-  // 用户登录
-  userLogin: function(loginData, callback) {
+  // 用户登录（账号密码登录）
+  userLogin: function(username, password, callback) {
     const that = this;
-    const authUtils = require('./utils/auth.js');
     
-    this.callCloudAPI('/api/auth/login', 'POST', loginData, (err, data) => {
-      if (!err && data && data.success) {
-        // 保存登录信息
-        that.setToken(data.token, data.refreshToken);
-        that.globalData.userInfo = data.userInfo;
-        that.globalData.authType = 'password';
-        
-        wx.setStorageSync('user_auth_type', 'password');
-        wx.setStorageSync('userInfo', data.userInfo);
-        
-        // 管理用户数据（新用户清空数据，老用户保留数据）
-        try {
-          const dataManageResult = authUtils.manageUserData(data.userInfo);
-          if (dataManageResult) {
-            console.log('用户数据管理成功');
-          } else {
-            console.error('用户数据管理失败');
-          }
-        } catch (error) {
-          console.error('用户数据管理异常:', error);
-        }
-        
-        if (callback) callback(null, data);
-      } else {
-        if (callback) callback(err || new Error('登录失败'), null);
-      }
-    });
+    // 验证输入参数
+    if (!username || !password) {
+      if (callback) callback(new Error('用户名和密码不能为空'), null);
+      return;
+    }
+    
+    // 调用登录云函数
+    that.callCloudFunction('login', {
+      username: username,
+      password: password
+    }, (err, data) => {
+       if (!err && data) {
+         that.setUserInfo(data.userInfo, data.token);
+         if (callback) callback(null, data);
+       } else {
+         if (callback) callback(err || new Error('登录失败'), null);
+       }
+     });
   },
 
   // 用户注册
-  userRegister: function(registerData, callback) {
+  userRegister: function(username, password, nickname, callback) {
     const that = this;
-    const authUtils = require('./utils/auth.js');
     
-    this.callCloudAPI('/api/auth/register', 'POST', registerData, (err, data) => {
-      if (!err && data && data.success) {
-        // 注册成功后自动登录
-        that.setToken(data.token, data.refreshToken);
-        that.globalData.userInfo = data.userInfo;
-        that.globalData.authType = 'password';
-        
-        wx.setStorageSync('user_auth_type', 'password');
-        wx.setStorageSync('userInfo', data.userInfo);
-        
-        // 新注册用户默认初始化数据
-        try {
-          const dataManageResult = authUtils.manageUserData(data.userInfo);
-          if (dataManageResult) {
-            console.log('新用户数据初始化成功');
-          } else {
-            console.error('新用户数据初始化失败');
-          }
-        } catch (error) {
-          console.error('新用户数据初始化异常:', error);
-        }
-        
+    // 验证输入参数
+    if (!username || !password) {
+      if (callback) callback(new Error('用户名和密码不能为空'), null);
+      return;
+    }
+    
+    // 调用注册云函数
+    that.callCloudFunction('register', {
+      username: username,
+      password: password,
+      nickname: nickname || username
+    }, (err, data) => {
+      if (!err && data) {
         if (callback) callback(null, data);
       } else {
         if (callback) callback(err || new Error('注册失败'), null);
@@ -168,20 +171,13 @@ App({
     });
   },
 
-  // 修改密码
-  changePassword: function(passwordData, callback) {
-    this.callCloudAPI('/api/auth/change-password', 'POST', passwordData, callback);
-  },
-
   // 用户登出
   userLogout: function(callback) {
     const that = this;
     
-    this.callCloudAPI('/api/auth/logout', 'POST', {}, (err, data) => {
-      // 无论成功失败都清除本地登录信息
-      that.clearAuth();
-      
-      if (callback) callback(err, data);
-    });
+    // 清除本地登录信息
+    that.clearAuth();
+    
+    if (callback) callback(null, { success: true });
   }
 });

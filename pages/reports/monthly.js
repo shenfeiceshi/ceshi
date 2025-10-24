@@ -107,16 +107,46 @@ Page({
 
   // 获取月度统计数据
   async getMonthStats() {
-    const { startOfMonth, endOfMonth } = this.getMonthDateRange();
-    
-    // 检查是否为新账号（没有任何数据）
-    const allDiaries = wx.getStorageSync('diaries') || [];
-    const allUserTasks = wx.getStorageSync('userTasks') || [];
-    const allPointsRecords = wx.getStorageSync('pointsRecords') || [];
-    const currentPoints = wx.getStorageSync('points') || 0;
-    
-    // 如果是新账号，返回空数据
-    if (allDiaries.length === 0 && allUserTasks.length === 0 && allPointsRecords.length === 0 && currentPoints === 0) {
+    try {
+      const { startOfMonth, endOfMonth } = this.getMonthDateRange();
+      
+      // 使用云函数获取月报数据
+      const result = await wx.cloud.callFunction({
+        name: 'getMonthlyReport',
+        data: {
+          year: this.data.year,
+          month: this.data.month
+        }
+      });
+      
+      if (result.result && result.result.success) {
+        const monthData = result.result.data;
+        return {
+          diaryCount: monthData.diaryCount || 0,
+          taskCount: monthData.taskCount || 0,
+          pointsEarned: monthData.pointsEarned || 0,
+          badgeCount: monthData.badgeCount || 0,
+          completionRate: monthData.completionRate || 0,
+          streakDays: monthData.streakDays || 0,
+          totalPoints: monthData.totalPoints || 0,
+          pointsSpent: monthData.pointsSpent || 0
+        };
+      } else {
+        // 返回空数据
+        return {
+          diaryCount: 0,
+          taskCount: 0,
+          pointsEarned: 0,
+          badgeCount: 0,
+          completionRate: 0,
+          streakDays: 0,
+          totalPoints: 0,
+          pointsSpent: 0
+        };
+      }
+    } catch (error) {
+      console.error('获取月度统计数据失败:', error);
+      // 返回空数据
       return {
         diaryCount: 0,
         taskCount: 0,
@@ -128,40 +158,6 @@ Page({
         pointsSpent: 0
       };
     }
-    
-    // 获取本月日记数据
-    const diaries = wx.getStorageSync('diaries') || [];
-    const monthDiaries = diaries.filter(diary => {
-      const diaryDate = new Date(diary.date);
-      return diaryDate >= startOfMonth && diaryDate <= endOfMonth;
-    });
-
-    // 获取本月任务完成数据
-    const { completedTasks, totalTasks } = this.getMonthTaskStats(startOfMonth, endOfMonth);
-
-    // 获取本月积分变化
-    const { pointsEarned, pointsSpent } = this.getMonthPointsStats(startOfMonth, endOfMonth);
-
-    // 获取徽章数量
-    const userInfo = wx.getStorageSync('userInfo') || {};
-    const badgeCount = (userInfo.badges && userInfo.badges.length) || 0;
-
-    // 计算连续天数
-    const streakDays = this.calculateStreakDays();
-
-    // 计算完成率
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-    return {
-      diaryCount: monthDiaries.length,
-      taskCount: completedTasks,
-      pointsEarned: pointsEarned,
-      badgeCount: badgeCount,
-      completionRate: completionRate,
-      streakDays: streakDays,
-      totalPoints: pointsEarned,
-      pointsSpent: pointsSpent
-    };
   },
 
   // 获取本月任务统计

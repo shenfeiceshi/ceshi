@@ -96,6 +96,18 @@
   box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.3);
 }
 
+/* 查看详情链接 */
+.profile-link {
+  margin-top: 16rpx;
+  text-align: center;
+}
+
+.profile-link text {
+  font-size: 24rpx;
+  color: #FF6B35;
+  text-decoration: underline;
+}
+
 /* 每日任务完成度卡片 */
 .task-progress-card {
   background: #FFFFFF;

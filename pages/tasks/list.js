@@ -21,23 +21,46 @@ Page({
     this.calculateStats();
   },
 
-  loadTasks() {
-    // 从本地存储加载任务
-    const tasks = wx.getStorageSync('userTasks') || this.getDefaultTasks();
-    const todayKey = this.getTodayKey();
-    const todayTaskStatus = wx.getStorageSync(`tasks_${todayKey}`) || {};
-
-    // 更新任务完成状态
-    const updatedTasks = tasks.map(task => ({
-      ...task,
-      completed: todayTaskStatus[task.id] || false
-    }));
-
-    this.setData({
-      tasks: updatedTasks
-    });
-
-    this.filterTasks();
+  async loadTasks() {
+    try {
+      wx.showLoading({ title: '加载中...' });
+      
+      const app = getApp();
+      const token = app.globalData.token || wx.getStorageSync('loginToken');
+      const today = new Date().toISOString().split('T')[0];
+      
+      const result = await wx.cloud.callFunction({
+        name: 'getTasks',
+        data: {
+          taskDate: today,
+          token: token
+        }
+      });
+      
+      if (result.result && result.result.success) {
+        this.setData({
+          tasks: result.result.data.tasks || []
+        });
+        this.filterTasks();
+      } else {
+        // 云函数返回失败，使用默认任务
+        const defaultTasks = this.getDefaultTasks();
+        this.setData({
+          tasks: defaultTasks
+        });
+        this.filterTasks();
+      }
+    } catch (error) {
+      console.error('加载任务失败:', error);
+      // 使用默认任务作为备用
+      const defaultTasks = this.getDefaultTasks();
+      this.setData({
+        tasks: defaultTasks
+      });
+      this.filterTasks();
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   getDefaultTasks() {
@@ -113,44 +136,59 @@ Page({
     });
   },
 
-  toggleTask(e) {
+  async toggleTask(e) {
     const taskId = parseInt(e.currentTarget.dataset.id);
-    const tasks = this.data.tasks.map(task => {
-      if (task.id === taskId) {
-        task.completed = !task.completed;
-      }
-      return task;
-    });
-
-    this.setData({
-      tasks
-    });
-
-    // 保存任务状态到本地存储
-    const todayKey = this.getTodayKey();
-    const todayTaskStatus = {};
-    tasks.forEach(task => {
-      todayTaskStatus[task.id] = task.completed;
-    });
-    wx.setStorageSync(`tasks_${todayKey}`, todayTaskStatus);
-
-    // 如果是完成任务，给予积分奖励
-    const task = tasks.find(t => t.id === taskId);
-    if (task && task.completed) {
-      this.addPoints(task.points);
-      wx.showToast({
-        title: `完成任务，获得${task.points}积分！`,
-        icon: 'success'
+    const task = this.data.tasks.find(t => t.id === taskId);
+    
+    if (!task) return;
+    
+    const newStatus = !task.completed;
+    
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'updateTask',
+        data: {
+          taskId: taskId,
+          completed: newStatus
+        }
       });
-    } else if (task && !task.completed) {
+      
+      if (result.success) {
+        // 更新本地状态
+        const tasks = this.data.tasks.map(t => {
+          if (t.id === taskId) {
+            t.completed = newStatus;
+          }
+          return t;
+        });
+
+        this.setData({ tasks });
+
+        // 如果是完成任务，显示积分奖励
+        if (newStatus) {
+          wx.showToast({
+            title: `完成任务，获得${task.points}积分！`,
+            icon: 'success'
+          });
+        } else {
+          wx.showToast({
+            title: '任务已取消完成',
+            icon: 'none'
+          });
+        }
+
+        this.filterTasks();
+        this.calculateStats();
+      } else {
+        throw new Error(result.error || '更新任务状态失败');
+      }
+    } catch (error) {
+      console.error('切换任务状态失败:', error);
       wx.showToast({
-        title: '任务已取消完成',
-        icon: 'none'
+        title: '操作失败，请重试',
+        icon: 'error'
       });
     }
-
-    this.filterTasks();
-    this.calculateStats();
   },
 
   editTask(e) {
@@ -165,26 +203,37 @@ Page({
     wx.showModal({
       title: '确认删除',
       content: '确定要删除这个任务吗？删除后无法恢复。',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          const tasks = this.data.tasks.filter(task => task.id !== taskId);
-          this.setData({
-            tasks
-          });
-          wx.setStorageSync('userTasks', tasks);
-          
-          // 同时清理今日任务状态中的记录
-          const todayKey = this.getTodayKey();
-          const todayTaskStatus = wx.getStorageSync(`tasks_${todayKey}`) || {};
-          delete todayTaskStatus[taskId];
-          wx.setStorageSync(`tasks_${todayKey}`, todayTaskStatus);
-          
-          this.filterTasks();
-          this.calculateStats();
-          wx.showToast({
-            title: '任务已删除',
-            icon: 'success'
-          });
+          try {
+            const result = await wx.cloud.callFunction({
+              name: 'deleteTask',
+              data: {
+                taskId: taskId
+              }
+            });
+            
+            if (result.success) {
+              // 更新本地状态
+              const tasks = this.data.tasks.filter(task => task.id !== taskId);
+              this.setData({ tasks });
+              
+              this.filterTasks();
+              this.calculateStats();
+              wx.showToast({
+                title: '任务已删除',
+                icon: 'success'
+              });
+            } else {
+              throw new Error(result.error || '删除任务失败');
+            }
+          } catch (error) {
+            console.error('删除任务失败:', error);
+            wx.showToast({
+              title: '删除失败，请重试',
+              icon: 'error'
+            });
+          }
         }
       }
     });
@@ -213,50 +262,7 @@ Page({
     });
   },
 
-  async addPoints(points) {
-    try {
-      // 调用云托管API增加积分
-      const result = await getApp().callCloudAPI('/api/points/add', {
-        amount: points,
-        source: '完成任务',
-        description: `完成任务获得${points}积分`
-      });
 
-      if (result && result.success) {
-        // 统一更新所有积分相关存储
-        this.updateAllPointsStorage(result.newBalance);
-      }
-    } catch (error) {
-      console.error('增加积分失败:', error);
-      // 如果云托管API失败，使用本地存储作为备用
-      const currentPoints = wx.getStorageSync('points') || 0;
-      const newPoints = currentPoints + points;
-      
-      // 统一更新所有积分相关存储
-      this.updateAllPointsStorage(newPoints);
-    }
-  },
-
-  // 统一更新所有积分相关存储的方法
-  updateAllPointsStorage(newPoints) {
-    try {
-      // 更新主要积分存储
-      wx.setStorageSync('points', newPoints);
-      
-      // 同步更新 userPoints（保持兼容性）
-      wx.setStorageSync('userPoints', newPoints);
-      
-      // 更新用户信息中的积分字段
-      const userInfo = wx.getStorageSync('userInfo') || {};
-      userInfo.points = newPoints;
-      userInfo.totalPoints = newPoints; // 同步更新总积分
-      wx.setStorageSync('userInfo', userInfo);
-      
-      console.log(`任务页面积分已同步更新为: ${newPoints}`);
-    } catch (error) {
-      console.error('任务页面更新积分存储失败:', error);
-    }
-  },
 
   getTodayKey() {
     const today = new Date();

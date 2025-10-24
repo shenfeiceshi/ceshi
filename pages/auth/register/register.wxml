@@ -1,97 +1,128 @@
 <!--pages/auth/register/register.wxml-->
 <view class="register-container">
-
   <!-- 注册内容 -->
   <view class="register-content">
-    <view class="step-content">
-      <view class="step-header">
-        <view class="step-title">创建您的账号</view>
-        <view class="step-desc">请填写账号和密码完成注册</view>
+    <!-- Logo和标题 -->
+    <view class="register-header">
+      <view class="logo-text">📖 成长日记</view>
+      <view class="title">欢迎加入</view>
+      <view class="subtitle">开启你的成长记录之旅</view>
+    </view>
+
+    <!-- 全局错误提示 -->
+    <view class="global-error" wx:if="{{globalError}}">
+      <view class="error-icon">⚠️</view>
+      <view class="error-text">{{globalError}}</view>
+    </view>
+
+    <!-- 注册表单 -->
+    <view class="register-form">
+      <!-- 用户名输入 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-icon">👤</text>
+          用户名
+        </view>
+        <view class="input-wrapper {{errors.username ? 'error' : ''}} {{focusStates.username ? 'focused' : ''}}">
+          <input class="form-input"
+                 type="text"
+                 placeholder="请输入用户名（3-20位字符）"
+                 value="{{username}}"
+                 bindinput="onUsernameInput"
+                 bindfocus="onInputFocus"
+                 bindblur="onInputBlur"
+                 data-field="username"
+                 maxlength="20" />
+        </view>
+        <view class="error-msg" wx:if="{{errors.username}}">{{errors.username}}</view>
       </view>
 
-      <view class="register-form">
-        <!-- 账号输入 -->
-        <view class="form-item">
-          <view class="input-wrapper">
-            <text class="input-icon">👤</text>
-            <input class="form-input" 
-                   type="text" 
-                   placeholder="请输入账号" 
-                   value="{{formData.account}}"
-                   data-field="account"
-                   bindinput="onInputChange"
-                   maxlength="20" />
-          </view>
-          <view class="error-msg" wx:if="{{errors.account}}">{{errors.account}}</view>
+      <!-- 昵称输入 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-icon">😊</text>
+          昵称
         </view>
-
-        <!-- 密码输入 -->
-        <view class="form-item">
-          <view class="input-wrapper">
-            <text class="input-icon">🔒</text>
-            <input class="form-input" 
-                   type="{{showPassword ? 'text' : 'password'}}" 
-                   placeholder="请输入密码（6-20位）"
-                   value="{{formData.password}}"
-                   data-field="password"
-                   bindinput="onInputChange"
-                   maxlength="20" />
-            <text class="password-toggle" 
-                  data-type="password"
-                  bindtap="togglePassword">
-              {{showPassword ? '👁️' : '🙈'}}
-            </text>
-          </view>
-          <view class="error-msg" wx:if="{{errors.password}}">{{errors.password}}</view>
+        <view class="input-wrapper {{errors.nickname ? 'error' : ''}} {{focusStates.nickname ? 'focused' : ''}}">
+          <input class="form-input"
+                 type="text"
+                 placeholder="请输入昵称（可选）"
+                 value="{{nickname}}"
+                 bindinput="onNicknameInput"
+                 bindfocus="onInputFocus"
+                 bindblur="onInputBlur"
+                 data-field="nickname"
+                 maxlength="20" />
         </view>
+        <view class="error-msg" wx:if="{{errors.nickname}}">{{errors.nickname}}</view>
+      </view>
 
-        <!-- 确认密码输入 -->
-        <view class="form-item">
-          <view class="input-wrapper">
-            <text class="input-icon">🔒</text>
-            <input class="form-input" 
-                   type="{{showConfirmPassword ? 'text' : 'password'}}" 
-                   placeholder="请再次输入密码" 
-                   value="{{formData.confirmPassword}}"
-                   data-field="confirmPassword"
-                   bindinput="onInputChange"
-                   maxlength="20" />
-            <text class="password-toggle" 
-                  data-type="confirmPassword"
-                  bindtap="togglePassword">
-              {{showConfirmPassword ? '👁️' : '🙈'}}
-            </text>
-          </view>
-          <view class="error-msg" wx:if="{{errors.confirmPassword}}">{{errors.confirmPassword}}</view>
+      <!-- 密码输入 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-icon">🔒</text>
+          密码
         </view>
-
-        <!-- 用户协议 -->
-        <view class="agreement-section">
-          <view class="agreement-checkbox" bindtap="toggleAgreeTerms">
-            <text class="checkbox-icon">{{formData.agreeTerms ? '✅' : '⭕'}}</text>
-            <text class="agreement-text">
-              我已阅读并同意
-              <text class="agreement-link">《用户协议》</text>
-              和
-              <text class="agreement-link">《隐私政策》</text>
-            </text>
-          </view>
+        <view class="input-wrapper {{errors.password ? 'error' : ''}} {{focusStates.password ? 'focused' : ''}}">
+          <input class="form-input"
+                 type="password"
+                 placeholder="请输入密码（6-20位）"
+                 value="{{password}}"
+                 bindinput="onPasswordInput"
+                 bindfocus="onInputFocus"
+                 bindblur="onInputBlur"
+                 data-field="password"
+                 maxlength="20" />
         </view>
+        <view class="error-msg" wx:if="{{errors.password}}">{{errors.password}}</view>
+      </view>
 
-        <!-- 注册按钮 -->
-        <button class="register-btn" 
-                bindtap="submitRegister" 
-                disabled="{{isLoading}}"
-                loading="{{isLoading}}">
-          {{isLoading ? '注册中...' : '立即注册'}}
-        </button>
+      <!-- 确认密码输入 -->
+      <view class="form-item">
+        <view class="form-label">
+          <text class="label-icon">🔒</text>
+          确认密码
+        </view>
+        <view class="input-wrapper {{errors.confirmPassword ? 'error' : ''}} {{focusStates.confirmPassword ? 'focused' : ''}}">
+          <input class="form-input"
+                 type="password"
+                 placeholder="请再次输入密码"
+                 value="{{confirmPassword}}"
+                 bindinput="onConfirmPasswordInput"
+                 bindfocus="onInputFocus"
+                 bindblur="onInputBlur"
+                 data-field="confirmPassword"
+                 maxlength="20" />
+        </view>
+        <view class="error-msg" wx:if="{{errors.confirmPassword}}">{{errors.confirmPassword}}</view>
+      </view>
+
+      <!-- 注册按钮 -->
+      <button class="register-btn {{isLoading ? 'loading' : ''}}"
+              bindtap="handleRegister"
+              disabled="{{isLoading}}"
+              loading="{{isLoading}}">
+        {{isLoading ? '注册中...' : '注册'}}
+      </button>
+
+      <!-- 登录链接 -->
+      <view class="login-link">
+        <text>已有账号？</text>
+        <text class="link-text" bindtap="goToLogin">立即登录</text>
       </view>
     </view>
 
-    <!-- 登录提示 -->
-    <view class="login-tip">
-      <text>已有账号？</text>
-      <text class="login-link" bindtap="goToLogin">立即登录</text>
+    <!-- 用户协议 -->
+    <view class="agreement">
+      <text>注册即表示您同意</text>
+      <text class="agreement-link">《用户协议》</text>
+      <text>和</text>
+      <text class="agreement-link">《隐私政策》</text>
+    </view>
+
+    <!-- 返回提示 -->
+    <view class="back-tip">
+      <text class="back-link" bindtap="goBack">返回上一页</text>
     </view>
   </view>
 </view>

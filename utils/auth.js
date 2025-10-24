@@ -1,63 +1,11 @@
 /**
- * 认证相关工具函数
+ * 认证相关工具函数 - 云开发版本
  */
-
-// 验证邮箱格式
-function validateEmail(email) {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
-
-// 验证手机号格式
-function validatePhone(phone) {
-  const phoneRegex = /^1[3-9]\d{9}$/;
-  return phoneRegex.test(phone);
-}
-
-// 验证密码强度
-function validatePassword(password) {
-  if (!password || password.length < 6) {
-    return {
-      valid: false,
-      message: '密码长度至少6位'
-    };
-  }
-  
-  if (password.length > 20) {
-    return {
-      valid: false,
-      message: '密码长度不能超过20位'
-    };
-  }
-  
-  // 检查是否包含字母和数字
-  const hasLetter = /[a-zA-Z]/.test(password);
-  const hasNumber = /\d/.test(password);
-  
-  if (!hasLetter || !hasNumber) {
-    return {
-      valid: false,
-      message: '密码必须包含字母和数字'
-    };
-  }
-  
-  return {
-    valid: true,
-    message: '密码强度良好'
-  };
-}
-
-// 验证验证码格式
-function validateVerifyCode(code) {
-  const codeRegex = /^\d{6}$/;
-  return codeRegex.test(code);
-}
 
 // 检查登录状态
 function checkLoginStatus() {
-  const token = wx.getStorageSync('token');
-  const userInfo = wx.getStorageSync('userInfo');
-  return !!(token && userInfo);
+  const app = getApp();
+  return app.globalData.isLoggedIn;
 }
 
 // 获取用户信息
@@ -75,6 +23,9 @@ function getUserInfo() {
 function saveUserInfo(userInfo) {
   try {
     wx.setStorageSync('userInfo', userInfo);
+    const app = getApp();
+    app.globalData.userInfo = userInfo;
+    app.globalData.isLoggedIn = true;
     return true;
   } catch (error) {
     console.error('保存用户信息失败:', error);
@@ -85,14 +36,37 @@ function saveUserInfo(userInfo) {
 // 清除登录信息
 function clearLoginInfo() {
   try {
-    wx.removeStorageSync('token');
     wx.removeStorageSync('userInfo');
-    wx.removeStorageSync('refreshToken');
+    const app = getApp();
+    app.globalData.userInfo = null;
+    app.globalData.isLoggedIn = false;
     return true;
   } catch (error) {
     console.error('清除登录信息失败:', error);
     return false;
   }
+}
+
+// 调用云函数的通用方法
+function callCloudFunction(functionName, data = {}) {
+  return new Promise((resolve, reject) => {
+    wx.cloud.callFunction({
+      name: functionName,
+      data: data,
+      success: function(res) {
+        if (res.result && res.result.success) {
+          resolve(res.result.data);
+        } else {
+          const error = res.result ? res.result.error : '请求失败';
+          reject(new Error(error));
+        }
+      },
+      fail: function(error) {
+        console.error(`云函数${functionName}调用失败:`, error);
+        reject(error);
+      }
+    });
+  });
 }
 
 // 获取所有需要管理的数据键名
@@ -442,21 +416,18 @@ function checkNetworkStatus() {
 }
 
 module.exports = {
-  validateEmail,
-  validatePhone,
-  validatePassword,
-  validateVerifyCode,
   checkLoginStatus,
   getUserInfo,
   saveUserInfo,
   clearLoginInfo,
+  callCloudFunction,
   formatErrorMessage,
   debounce,
   throttle,
   generateRandomString,
   formatTime,
   checkNetworkStatus,
-  // 新增的用户数据管理函数
+  // 保留的用户数据管理函数（云开发环境下可能不需要，但保留以防万一）
   manageUserData,
   clearAllUserData,
   initNewUserData,

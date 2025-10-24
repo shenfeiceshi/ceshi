@@ -18,9 +18,9 @@
   "author": "Growth Diary Team",
   "license": "MIT",
   "dependencies": {
+    "@babel/runtime": "^7.28.4",
     "@vant/weapp": "^1.11.6"
   },
-  "devDependencies": {},
   "repository": {
     "type": "git",
     "url": ""

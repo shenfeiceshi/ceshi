@@ -16,11 +16,15 @@
     <view class="user-info center">
       <view class="username">{{userInfo.nickName || '小明'}}</view>
       <view class="user-id" wx:if="{{hasUserInfo}}">ID: {{userInfo.id || '12345678'}}</view>
-      <view class="points-text" wx:if="{{hasUserInfo}}">当前积分: {{userInfo.points || 150}}</view>
+      <view class="points-text" wx:if="{{hasUserInfo}}">当前积分: {{userInfo.points || 0}}</view>
       <!-- 未登录状态显示登录按钮 -->
       <view class="login-prompt" wx:if="{{!hasUserInfo}}">
         <view class="login-text">登录后享受更多功能</view>
         <view class="login-button" bindtap="goToLogin">立即登录</view>
+      </view>
+      <!-- 已登录状态显示更多功能 -->
+      <view class="profile-link" wx:if="{{hasUserInfo}}" bindtap="goToProfile">
+        <text>查看详情 ></text>
       </view>
     </view>
   </view>

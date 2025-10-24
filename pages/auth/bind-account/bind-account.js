@@ -209,31 +209,38 @@ Page({
       mask: true
     });
     
-    // 调用发送验证码API
-    getApp().callAuthAPI('/api/auth/send-verify-code', 'POST', {
+    // 调用发送验证码云函数
+    getApp().callCloudFunction('sendVerifyCode', {
       account: account,
-      type: 'bind'
-    }, (err, data) => {
+      type: 'bind',
+      bindType: bindType
+    }).then(result => {
       wx.hideLoading();
       
-      if (err) {
+      if (result.success) {
+        // 开始倒计时
+        this.startCountdown();
+        
         wx.showToast({
-          title: '发送失败，请重试',
+          title: '验证码已发送',
+          icon: 'success'
+        });
+        
+        this.setData({
+          codeSent: true
+        });
+      } else {
+        wx.showToast({
+          title: result.error || '发送失败，请重试',
           icon: 'none'
         });
-        return;
       }
-      
-      // 开始倒计时
-      this.startCountdown();
-      
+    }).catch(error => {
+      wx.hideLoading();
+      console.error('发送验证码失败:', error);
       wx.showToast({
-        title: '验证码已发送',
-        icon: 'success'
-      });
-      
-      this.setData({
-        codeSent: true
+        title: '发送失败，请重试',
+        icon: 'none'
       });
     });
   },
@@ -297,63 +304,65 @@ Page({
       mask: true
     });
     
-    // 调用绑定API
-    getApp().callAuthAPI('/api/auth/wechat-bind', 'POST', {
-      openid: userInfo.openid || '',
-      unionid: userInfo.unionid || '',
+    // 调用绑定云函数
+    getApp().callCloudFunction('bindAccount', {
       account: account,
       verifyCode: verifyCode,
       password: password,
       bindType: bindType
-    }, (err, data) => {
+    }).then(result => {
       wx.hideLoading();
       this.setData({
         loading: false
       });
       
-      if (err) {
-        let errorMsg = '绑定失败，请重试';
-        if (err.message) {
-          if (err.message.includes('验证码')) {
-            errorMsg = '验证码错误或已过期';
-            this.setData({
-              'errors.verifyCode': errorMsg
-            });
-          } else if (err.message.includes('已存在')) {
-            errorMsg = bindType === 'phone' ? '该手机号已被绑定' : '该邮箱已被绑定';
-            this.setData({
-              'errors.account': errorMsg
-            });
-          }
+      if (result.success) {
+        // 绑定成功
+        wx.showToast({
+          title: '绑定成功',
+          icon: 'success'
+        });
+        
+        // 更新本地用户信息
+        if (result.data && result.data.userInfo) {
+          wx.setStorageSync('userInfo', result.data.userInfo);
+          getApp().globalData.userInfo = result.data.userInfo;
+        }
+        
+        // 延迟跳转
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1500);
+      } else {
+        let errorMsg = result.error || '绑定失败，请重试';
+        
+        // 根据错误类型设置具体的错误信息
+        if (errorMsg.includes('验证码')) {
+          this.setData({
+            'errors.verifyCode': '验证码错误或已过期'
+          });
+        } else if (errorMsg.includes('已存在') || errorMsg.includes('已被绑定')) {
+          this.setData({
+            'errors.account': bindType === 'phone' ? '该手机号已被绑定' : '该邮箱已被绑定'
+          });
         }
         
         wx.showToast({
           title: errorMsg,
           icon: 'none'
         });
-        return;
       }
-      
-      // 绑定成功
-      wx.showToast({
-        title: '绑定成功',
-        icon: 'success'
+    }).catch(error => {
+      wx.hideLoading();
+      this.setData({
+        loading: false
       });
       
-      // 更新本地用户信息
-      if (data.userInfo) {
-        wx.setStorageSync('userInfo', data.userInfo);
-      }
-      
-      // 保存token
-      if (data.token) {
-        wx.setStorageSync('auth_token', data.token);
-      }
-      
-      // 延迟跳转
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
+      console.error('绑定账号失败:', error);
+      wx.showToast({
+        title: '绑定失败，请重试',
+        icon: 'none'
+      });
     });
   },
 

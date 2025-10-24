@@ -39,21 +39,41 @@ Page({
     }
   },
 
-  loadTask() {
-    const tasks = wx.getStorageSync('userTasks') || [];
-    const task = tasks.find(t => t.id === this.data.taskId);
-    
-    if (task) {
-      this.setData({
-        taskForm: {
-          title: task.title || '',
-          category: task.category || '',
-          points: task.points || 10,
-          time: task.time || '',
-          description: task.description || '',
-          repeat: task.repeat || 'daily'
+  async loadTask() {
+    try {
+      wx.showLoading({ title: '加载中...' });
+      
+      const result = await wx.cloud.callFunction({
+        name: 'getTasks',
+        data: {
+          taskId: this.data.taskId
         }
       });
+      
+      if (result.success) {
+        const task = result.data.task;
+        this.setData({
+          taskForm: {
+            title: task.title || '',
+            category: task.category || '',
+            points: task.points || 10,
+            time: task.time || '',
+            description: task.description || '',
+            repeat: task.repeat || 'daily'
+          }
+        });
+      } else {
+        throw new Error(result.error || '加载任务失败');
+      }
+    } catch (error) {
+      console.error('加载任务失败:', error);
+      wx.showToast({
+        title: '加载失败',
+        icon: 'error'
+      });
+      wx.navigateBack();
+    } finally {
+      wx.hideLoading();
     }
   },
 
@@ -96,7 +116,7 @@ Page({
     });
   },
 
-  onSave() {
+  async onSave() {
     const { taskForm, isEdit, taskId } = this.data;
     
     // 表单验证
@@ -116,43 +136,51 @@ Page({
       return;
     }
 
-    // 获取现有任务列表
-    let tasks = wx.getStorageSync('userTasks') || [];
-    
-    if (isEdit) {
-      // 编辑现有任务
-      const taskIndex = tasks.findIndex(t => t.id === taskId);
-      if (taskIndex !== -1) {
-        tasks[taskIndex] = {
-          ...tasks[taskIndex],
-          ...taskForm,
-          updatedAt: new Date().toISOString()
-        };
+    try {
+      wx.showLoading({ title: '保存中...' });
+      
+      let result;
+      if (isEdit) {
+        // 编辑现有任务
+        result = await wx.cloud.callFunction({
+          name: 'updateTask',
+          data: {
+            taskId: taskId,
+            taskData: taskForm
+          }
+        });
+      } else {
+        // 创建新任务
+        result = await wx.cloud.callFunction({
+          name: 'addTask',
+          data: {
+            taskData: taskForm
+          }
+        });
       }
-    } else {
-      // 创建新任务
-      const newTask = {
-        id: Date.now(),
-        ...taskForm,
-        completed: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-      tasks.push(newTask);
+      
+      if (result.success) {
+        wx.showToast({
+          title: isEdit ? '任务已更新' : '任务已创建',
+          icon: 'success'
+        });
+
+        // 返回上一页
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1500);
+      } else {
+        throw new Error(result.error || '保存任务失败');
+      }
+    } catch (error) {
+      console.error('保存任务失败:', error);
+      wx.showToast({
+        title: '保存失败，请重试',
+        icon: 'error'
+      });
+    } finally {
+      wx.hideLoading();
     }
-
-    // 保存到本地存储
-    wx.setStorageSync('userTasks', tasks);
-
-    wx.showToast({
-      title: isEdit ? '任务已更新' : '任务已创建',
-      icon: 'success'
-    });
-
-    // 返回上一页
-    setTimeout(() => {
-      wx.navigateBack();
-    }, 1500);
   },
 
   onCancel() {

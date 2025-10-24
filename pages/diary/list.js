@@ -1,4 +1,6 @@
 // 小六日记列表页面 - 朋友圈风格
+const app = getApp();
+
 Page({
   data: {
     // 统计数据
@@ -35,14 +37,36 @@ Page({
   },
 
   onLoad() {
+    // 检查登录状态
+    if (!app.globalData.isLoggedIn) {
+      // 未登录时显示默认数据
+      this.setData({
+        totalDiaries: 0,
+        thisMonthDiaries: 0,
+        continuousDays: 0,
+        diaryList: []
+      });
+      return;
+    }
+    
     this.loadStats();
     this.loadDiaryList();
   },
 
   onShow() {
     // 从其他页面返回时刷新数据
-    this.loadStats();
-    this.loadDiaryList(true);
+    if (app.globalData.isLoggedIn) {
+      this.loadStats();
+      this.loadDiaryList(true);
+    } else {
+      // 未登录时显示默认数据
+      this.setData({
+        totalDiaries: 0,
+        thisMonthDiaries: 0,
+        continuousDays: 0,
+        diaryList: []
+      });
+    }
   },
 
   onPullDownRefresh() {
@@ -58,63 +82,60 @@ Page({
   },
 
   // 加载统计数据
-  loadStats() {
+  async loadStats() {
     try {
-      const diaries = wx.getStorageSync('diaries') || [];
-      const now = new Date();
-      const currentMonth = now.getMonth();
-      const currentYear = now.getFullYear();
+      wx.showLoading({ title: '加载中...' });
       
-      // 计算本月日记数量
-      const thisMonthDiaries = diaries.filter(diary => {
-        const diaryDate = new Date(diary.date);
-        return diaryDate.getMonth() === currentMonth && 
-               diaryDate.getFullYear() === currentYear;
-      }).length;
+      const app = getApp();
+      const token = app.globalData.token;
       
-      // 计算连续天数（简化版本）
-      const continuousDays = this.calculateContinuousDays(diaries);
+      if (!token) {
+        // 未登录时使用默认数据
+        this.setData({
+          totalDiaries: 0,
+          thisMonthDiaries: 0,
+          continuousDays: 0
+        });
+        return;
+      }
       
-      this.setData({
-        totalDiaries: diaries.length,
-        thisMonthDiaries,
-        continuousDays
+      const result = await wx.cloud.callFunction({
+        name: 'getDiaries',
+        data: {
+          type: 'stats',
+          token
+        }
       });
+      
+      if (result.result && result.result.success) {
+        this.setData({
+          totalDiaries: result.result.data.totalDiaries || 0,
+          thisMonthDiaries: result.result.data.thisMonthDiaries || 0,
+          continuousDays: result.result.data.continuousDays || 0
+        });
+      } else {
+        // 云函数返回失败时使用默认数据
+        this.setData({
+          totalDiaries: 0,
+          thisMonthDiaries: 0,
+          continuousDays: 0
+        });
+      }
     } catch (error) {
       console.error('加载统计数据失败:', error);
+      // 错误时使用默认数据
+      this.setData({
+        totalDiaries: 0,
+        thisMonthDiaries: 0,
+        continuousDays: 0
+      });
+    } finally {
+      wx.hideLoading();
     }
-  },
-
-  // 计算连续写日记天数
-  calculateContinuousDays(diaries) {
-    if (diaries.length === 0) return 0;
-    
-    // 按日期排序
-    const sortedDiaries = diaries.sort((a, b) => new Date(b.date) - new Date(a.date));
-    
-    let continuousDays = 0;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    for (let i = 0; i < sortedDiaries.length; i++) {
-      const diaryDate = new Date(sortedDiaries[i].date);
-      diaryDate.setHours(0, 0, 0, 0);
-      
-      const expectedDate = new Date(today);
-      expectedDate.setDate(today.getDate() - i);
-      
-      if (diaryDate.getTime() === expectedDate.getTime()) {
-        continuousDays++;
-      } else {
-        break;
-      }
-    }
-    
-    return continuousDays;
   },
 
   // 加载日记列表
-  loadDiaryList(refresh = false) {
+  async loadDiaryList(refresh = false) {
     if (refresh) {
       this.setData({
         currentPage: 1,
@@ -126,33 +147,56 @@ Page({
     this.setData({ loading: true });
 
     try {
-      const allDiaries = wx.getStorageSync('diaries') || [];
+      const app = getApp();
+      const token = app.globalData.token;
       
-      // 按创建时间倒序排列
-      const sortedDiaries = allDiaries.sort((a, b) => 
-        new Date(b.createTime || b.date) - new Date(a.createTime || a.date)
-      );
-
-      // 分页处理
-      const startIndex = (this.data.currentPage - 1) * this.data.pageSize;
-      const endIndex = startIndex + this.data.pageSize;
-      const pageDiaries = sortedDiaries.slice(startIndex, endIndex);
-
-      // 格式化日记数据
-      const formattedDiaries = pageDiaries.map(diary => this.formatDiaryItem(diary));
-
-      this.setData({
-        diaryList: refresh ? formattedDiaries : [...this.data.diaryList, ...formattedDiaries],
-        hasMore: endIndex < sortedDiaries.length,
-        loading: false
+      if (!token) {
+        // 未登录时显示空列表
+        this.setData({
+          diaryList: [],
+          hasMore: false,
+          loading: false
+        });
+        return;
+      }
+      
+      const result = await wx.cloud.callFunction({
+        name: 'getDiaries',
+        data: {
+          type: 'list',
+          page: this.data.currentPage,
+          pageSize: this.data.pageSize,
+          token
+        }
       });
+      
+      if (result.result && result.result.success) {
+        const { diaries, hasMore } = result.result.data;
+        
+        // 格式化日记数据
+        const formattedDiaries = diaries.map(diary => this.formatDiaryItem(diary));
+
+        this.setData({
+          diaryList: refresh ? formattedDiaries : [...this.data.diaryList, ...formattedDiaries],
+          hasMore: hasMore,
+          loading: false
+        });
+      } else {
+        // 云函数返回失败时显示空列表
+        this.setData({
+          diaryList: [],
+          hasMore: false,
+          loading: false
+        });
+      }
 
     } catch (error) {
       console.error('加载日记列表失败:', error);
-      this.setData({ loading: false });
-      wx.showToast({
-        title: '加载失败',
-        icon: 'error'
+      // 错误时显示空列表
+      this.setData({
+        diaryList: [],
+        hasMore: false,
+        loading: false
       });
     }
   },
@@ -183,7 +227,7 @@ Page({
     }
     
     return {
-      id: diary.id,
+      id: diary._id || diary.id,
       day,
       month,
       year,
@@ -249,6 +293,50 @@ Page({
     wx.navigateTo({
       url: `/pages/diary/write?id=${diaryId}&mode=edit`
     });
+  },
+
+  // 删除日记
+  async deleteDiary(e) {
+    const diaryId = e.currentTarget.dataset.id;
+    
+    const res = await wx.showModal({
+      title: '确认删除',
+      content: '删除后无法恢复，确定要删除这篇日记吗？'
+    });
+    
+    if (!res.confirm) return;
+    
+    try {
+      wx.showLoading({ title: '删除中...' });
+      
+      const result = await wx.cloud.callFunction({
+        name: 'deleteDiary',
+        data: {
+          diaryId: diaryId
+        }
+      });
+      
+      if (result.success) {
+        wx.showToast({
+          title: '删除成功',
+          icon: 'success'
+        });
+        
+        // 刷新列表
+        this.loadStats();
+        this.loadDiaryList(true);
+      } else {
+        throw new Error(result.error || '删除失败');
+      }
+    } catch (error) {
+      console.error('删除日记失败:', error);
+      wx.showToast({
+        title: '删除失败',
+        icon: 'error'
+      });
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   // 分享日记

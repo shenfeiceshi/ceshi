@@ -24,17 +24,43 @@ Page({
   },
 
   // 加载用户信息
-  loadUserInfo() {
+  async loadUserInfo() {
     try {
-      const userInfo = wx.getStorageSync('userInfo') || {};
-      this.setData({
-        userInfo: {
-          avatar: userInfo.avatar || '/images/default-avatar.png',
-          nickname: userInfo.nickname || '小朋友'
-        }
+      wx.showLoading({ title: '加载中...' });
+      
+      const result = await wx.cloud.callFunction({
+        name: 'login',
+        data: {}
       });
+      
+      if (result.result && result.result.success) {
+        const userInfo = result.result.data.userInfo;
+        this.setData({
+          userInfo: {
+            avatar: userInfo.avatarUrl || '/images/default-avatar.png',
+            nickname: userInfo.nickname || '小朋友'
+          }
+        });
+      } else {
+        // 使用默认值
+        this.setData({
+          userInfo: {
+            avatar: '/images/default-avatar.png',
+            nickname: '小朋友'
+          }
+        });
+      }
     } catch (error) {
       console.error('加载用户信息失败:', error);
+      // 使用默认值
+      this.setData({
+        userInfo: {
+          avatar: '/images/default-avatar.png',
+          nickname: '小朋友'
+        }
+      });
+    } finally {
+      wx.hideLoading();
     }
   },
 
@@ -59,17 +85,47 @@ Page({
       count: 1,
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
-      success(res) {
+      success: async function(res) {
         const tempFilePath = res.tempFilePaths[0];
-        that.setData({
-          'userInfo.avatar': tempFilePath
-        });
-        that.saveUserInfo();
         
-        wx.showToast({
-          title: '头像更新成功',
-          icon: 'success'
-        });
+        try {
+          wx.showLoading({ title: '上传中...' });
+          
+          // 上传到云存储
+          const uploadResult = await wx.cloud.uploadFile({
+            cloudPath: `avatars/${Date.now()}-${Math.random()}.jpg`,
+            filePath: tempFilePath
+          });
+          
+          // 更新用户信息
+          const result = await wx.cloud.callFunction({
+            name: 'updateProfile',
+            data: {
+              avatarUrl: uploadResult.fileID
+            }
+          });
+          
+          if (result.result && result.result.success) {
+            that.setData({
+              'userInfo.avatar': uploadResult.fileID
+            });
+            
+            wx.showToast({
+              title: '头像更新成功',
+              icon: 'success'
+            });
+          } else {
+            throw new Error(result.result.error || '头像更新失败');
+          }
+        } catch (error) {
+          console.error('更换头像失败:', error);
+          wx.showToast({
+            title: '头像更新失败',
+            icon: 'error'
+          });
+        } finally {
+          wx.hideLoading();
+        }
       },
       fail() {
         wx.showToast({
@@ -110,7 +166,7 @@ Page({
   },
 
   // 确认编辑
-  confirmEdit() {
+  async confirmEdit() {
     const { editType, editValue } = this.data;
     
     if (!editValue.trim()) {
@@ -122,15 +178,37 @@ Page({
     }
 
     if (editType === 'nickname') {
-      this.setData({
-        'userInfo.nickname': editValue.trim()
-      });
-      this.saveUserInfo();
-      
-      wx.showToast({
-        title: '昵称修改成功',
-        icon: 'success'
-      });
+      try {
+        wx.showLoading({ title: '保存中...' });
+        
+        const result = await wx.cloud.callFunction({
+          name: 'updateProfile',
+          data: {
+            nickname: editValue.trim()
+          }
+        });
+        
+        if (result.result && result.result.success) {
+          this.setData({
+            'userInfo.nickname': editValue.trim()
+          });
+          
+          wx.showToast({
+            title: '昵称修改成功',
+            icon: 'success'
+          });
+        } else {
+          throw new Error(result.result.error || '昵称修改失败');
+        }
+      } catch (error) {
+        console.error('修改昵称失败:', error);
+        wx.showToast({
+          title: '昵称修改失败',
+          icon: 'error'
+        });
+      } finally {
+        wx.hideLoading();
+      }
     }
 
     this.hideEditModal();

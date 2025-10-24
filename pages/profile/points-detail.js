@@ -44,159 +44,64 @@ Page({
   },
 
   // 加载用户积分数据
-  loadPointsData: function() {
+  async loadPointsData() {
     try {
-      // 检查是否为新用户
-      const diaries = wx.getStorageSync('diaries') || [];
-      const userTasks = wx.getStorageSync('userTasks') || [];
-      const pointsRecords = wx.getStorageSync('pointsRecords') || [];
-      const currentPoints = wx.getStorageSync('points') || 0;
+      wx.showLoading({ title: '加载中...' });
       
-      // 判断是否为新用户（没有任何历史数据）
-      const isNewUser = diaries.length === 0 && 
-                       userTasks.length === 0 && 
-                       pointsRecords.length === 0 && 
-                       currentPoints === 0;
-      
-      // 新用户显示0积分，老用户显示实际积分
-      const userPoints = isNewUser ? 0 : currentPoints;
-      
-      this.setData({
-        'pointsStats.totalPoints': userPoints
+      const result = await wx.cloud.callFunction({
+        name: 'getUserInfo',
+        data: {}
       });
+      
+      if (result.success) {
+        const userInfo = result.data.userInfo;
+        this.setData({
+          'pointsStats.totalPoints': userInfo.points || 0
+        });
+      } else {
+        this.setData({
+          'pointsStats.totalPoints': 0
+        });
+      }
     } catch (error) {
       console.error('加载积分数据失败:', error);
+      this.setData({
+        'pointsStats.totalPoints': 0
+      });
+    } finally {
+      wx.hideLoading();
     }
   },
 
-  // 加载真实的积分记录数据
-  loadRealPointsRecords: function() {
+  // 加载积分记录数据
+  async loadRealPointsRecords() {
     try {
-      // 从本地存储获取真实的积分记录
-      let pointsRecords = wx.getStorageSync('pointsRecords') || [];
+      const result = await wx.cloud.callFunction({
+        name: 'getPointsRecords',
+        data: {
+          page: 1,
+          pageSize: 100
+        }
+      });
       
-      // 检查当前积分和用户信息
-      const currentPoints = wx.getStorageSync('points') || 0;
-      const userInfo = wx.getStorageSync('userInfo') || {};
-      
-      // 如果积分为0或数据已清空，直接显示空状态，不创建任何初始记录
-      if (currentPoints === 0) {
-        console.log('当前积分为0，显示空状态');
+      if (result.result && result.result.success) {
+        this.setData({
+          allRecords: result.result.data.records || []
+        });
+      } else {
         this.setData({
           allRecords: []
         });
-        return;
-      }
-      
-      // 只有当用户有积分且没有记录时才创建初始记录
-      if (pointsRecords.length === 0 && currentPoints > 0) {
-        pointsRecords = this.createInitialRecords();
-        wx.setStorageSync('pointsRecords', pointsRecords);
-      }
-      
-      // 重新计算余额逻辑
-      if (pointsRecords.length > 0) {
-        pointsRecords = this.recalculateBalances(pointsRecords);
-      }
-      
-      this.setData({
-        allRecords: pointsRecords
-      });
-      
-      // 保存修正后的记录
-      if (pointsRecords.length > 0) {
-        wx.setStorageSync('pointsRecords', pointsRecords);
       }
     } catch (error) {
       console.error('加载积分记录失败:', error);
-      // 如果加载失败，设置为空数组
       this.setData({
         allRecords: []
       });
     }
   },
 
-  // 创建初始积分记录
-  createInitialRecords: function() {
-    const currentPoints = wx.getStorageSync('userPoints') || 70;
-    const now = new Date();
-    
-    return [
-      {
-        id: 1,
-        type: 'spend',
-        amount: 20,
-        source: '抽奖消耗',
-        description: '参与幸运大转盘抽奖',
-        date: this.formatDate(now),
-        time: '15:45',
-        balance: currentPoints,
-        lotteryId: 'lottery_001'
-      },
-      {
-        id: 2,
-        type: 'earn',
-        amount: 50,
-        source: '完成日记任务',
-        description: '今天写了一篇关于春游的日记',
-        date: this.formatDate(now),
-        time: '14:30',
-        balance: currentPoints + 20,
-        taskId: 'diary_001'
-      },
-      {
-        id: 3,
-        type: 'earn',
-        amount: 25,
-        source: '完成作业',
-        description: '按时完成数学作业',
-        date: this.formatDate(new Date(now.getTime() - 24 * 60 * 60 * 1000)),
-        time: '19:20',
-        balance: currentPoints - 30,
-        taskId: 'homework_001'
-      }
-    ];
-  },
 
-  // 重新计算所有记录的余额
-  recalculateBalances: function(records) {
-    if (!records || records.length === 0) return records;
-    
-    // 获取当前总积分
-    const currentPoints = wx.getStorageSync('userPoints') || 70;
-    
-    // 按时间排序（最新的在前）
-    records.sort((a, b) => {
-      // 使用iOS兼容的日期格式
-      const dateA = new Date(a.date.replace(/-/g, '/') + ' ' + a.time + ':00');
-      const dateB = new Date(b.date.replace(/-/g, '/') + ' ' + b.time + ':00');
-      return dateB - dateA;
-    });
-    
-    // 从最新记录开始，往前推算每条记录的余额
-    for (let i = 0; i < records.length; i++) {
-      const record = records[i];
-      
-      if (i === 0) {
-        // 最新记录的余额就是当前总积分
-        record.balance = currentPoints;
-      } else {
-        // 前一条记录的余额 = 后一条记录的余额 ± 当前记录的发生额
-        const nextRecord = records[i - 1];
-        const nextBalance = nextRecord.balance;
-        
-        if (record.type === 'earn') {
-          // 如果是获得积分，前一条余额 = 后一条余额 - 当前获得额
-          record.balance = nextBalance - record.amount;
-        } else {
-          // 如果是消费积分，前一条余额 = 后一条余额 + 当前消费额
-          record.balance = nextBalance + record.amount;
-        }
-      }
-    }
-    
-    return records;
-  },
 
   // 格式化日期
   formatDate: function(date) {
@@ -208,27 +113,6 @@ Page({
 
   // 计算积分统计
   calculateStats: function() {
-    // 检查是否为新用户
-    const diaries = wx.getStorageSync('diaries') || [];
-    const userTasks = wx.getStorageSync('userTasks') || [];
-    const pointsRecords = wx.getStorageSync('pointsRecords') || [];
-    const currentPoints = wx.getStorageSync('points') || 0;
-    
-    // 判断是否为新用户（没有任何历史数据）
-    const isNewUser = diaries.length === 0 && 
-                     userTasks.length === 0 && 
-                     pointsRecords.length === 0 && 
-                     currentPoints === 0;
-    
-    // 如果是新用户，直接设置为0
-    if (isNewUser) {
-      this.setData({
-        'pointsStats.monthlyEarned': 0,
-        'pointsStats.monthlySpent': 0
-      });
-      return;
-    }
-    
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();

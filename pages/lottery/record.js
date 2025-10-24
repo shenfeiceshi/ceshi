@@ -22,46 +22,75 @@ Page({
   },
 
   // 加载抽奖记录
-  loadRecords: function() {
-    const records = wx.getStorageSync('lotteryRecords') || [];
-    
-    // 处理记录数据，添加时间格式化和emoji
-    const processedRecords = records.map(record => {
-      const date = new Date(record.timestamp);
-      return {
-        ...record,
-        date: date.toLocaleDateString(),
-        time: date.toLocaleTimeString('zh-CN', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        prizeEmoji: record.prizeEmoji || '🎁', // 确保有emoji
-        isWin: true, // 存储的都是中奖记录
-        cost: 10 // 抽奖消耗积分
-      };
-    });
+  async loadRecords() {
+    try {
+      wx.showLoading({ title: '加载中...' });
+      
+      const result = await wx.cloud.callFunction({
+        name: 'getLotteryRecords',
+        data: {
+          page: this.data.currentPage,
+          pageSize: 10
+        }
+      });
+      
+      if (result.success && result.data.records) {
+        const records = result.data.records;
+        
+        // 处理记录数据，添加时间格式化
+        const processedRecords = records.map(record => {
+          const date = new Date(record.createTime);
+          return {
+            ...record,
+            date: date.toLocaleDateString(),
+            time: date.toLocaleTimeString('zh-CN', { 
+              hour: '2-digit', 
+              minute: '2-digit' 
+            }),
+            prizeEmoji: record.prizeEmoji || '🎁',
+            isWin: record.prizeId && record.prizeName !== '谢谢参与',
+            timestamp: date.getTime()
+          };
+        });
 
-    // 添加一些未中奖记录（模拟数据）
-    const mockFailRecords = this.generateMockFailRecords();
-    const allRecords = [...processedRecords, ...mockFailRecords];
-    
-    // 按时间倒序排列
-    allRecords.sort((a, b) => b.timestamp - a.timestamp);
+        // 按时间倒序排列
+        processedRecords.sort((a, b) => b.timestamp - a.timestamp);
 
-    // 计算统计信息
-    const totalLotteries = allRecords.length;
-    const totalWins = processedRecords.length;
-    const winRate = totalLotteries > 0 ? Math.round((totalWins / totalLotteries) * 100) : 0;
+        // 计算统计信息
+        const totalLotteries = processedRecords.length;
+        const totalWins = processedRecords.filter(record => record.isWin).length;
+        const winRate = totalLotteries > 0 ? Math.round((totalWins / totalLotteries) * 100) : 0;
 
-    this.setData({
-      records: allRecords,
-      totalLotteries,
-      totalWins,
-      winRate
-    });
+        this.setData({
+          records: processedRecords,
+          totalLotteries,
+          totalWins,
+          winRate
+        });
 
-    // 应用当前筛选
-    this.applyFilter();
+        // 应用当前筛选
+        this.applyFilter();
+      } else {
+        this.setData({
+          records: [],
+          totalLotteries: 0,
+          totalWins: 0,
+          winRate: 0
+        });
+        this.applyFilter();
+      }
+    } catch (error) {
+      console.error('加载抽奖记录失败:', error);
+      this.setData({
+        records: [],
+        totalLotteries: 0,
+        totalWins: 0,
+        winRate: 0
+      });
+      this.applyFilter();
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   // 生成模拟的未中奖记录

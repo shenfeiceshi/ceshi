@@ -1,4 +1,6 @@
 // 小六日记编辑页面 - AI智能配图
+const app = getApp();
+
 Page({
   data: {
     // 基础数据
@@ -8,6 +10,10 @@ Page({
     content: '',
     contentLength: 0,
     maxContentLength: 1000,
+    
+    // 编辑模式
+    isEditMode: false,
+    editDiaryId: null,
     
     // 心情选项
     moodOptions: [
@@ -55,6 +61,14 @@ Page({
   },
 
   onLoad(options) {
+    // 检查登录状态
+    if (!app.globalData.isLoggedIn) {
+      wx.redirectTo({
+        url: '/pages/auth/login/login'
+      });
+      return;
+    }
+
     // 初始化日期为今天
     const today = new Date();
     const dateStr = this.formatDate(today);
@@ -62,8 +76,16 @@ Page({
       selectedDate: dateStr
     });
 
-    // 如果是编辑模式，加载草稿数据
-    if (options.draftId) {
+    // 如果是编辑模式，加载日记数据
+    if (options.id && options.mode === 'edit') {
+      this.setData({
+        isEditMode: true,
+        editDiaryId: options.id
+      });
+      this.loadDiaryForEdit(options.id);
+    }
+    // 如果是草稿模式，加载草稿数据
+    else if (options.draftId) {
       this.loadDraft(options.draftId);
     }
   },
@@ -136,79 +158,37 @@ Page({
     this.setData({ isAiGenerating: true });
 
     try {
-      // 模拟AI生成配图建议
-      await this.simulateAiGeneration();
-      
+      const result = await wx.cloud.callFunction({
+        name: 'generateAiImage',
+        data: {
+          content: this.data.content,
+          mood: this.data.selectedMood,
+          weather: this.data.selectedWeather
+        }
+      });
+
+      if (result.success) {
+        this.setData({
+          aiSuggestions: result.data.suggestions || [],
+          isAiGenerating: false
+        });
+      } else {
+        // 如果云函数失败，使用本地模拟数据
+        const suggestions = this.getMockAiSuggestions();
+        this.setData({
+          aiSuggestions: suggestions,
+          isAiGenerating: false
+        });
+      }
+    } catch (error) {
+      console.error('AI配图生成失败:', error);
+      // 使用本地模拟数据作为备选
       const suggestions = this.getMockAiSuggestions();
       this.setData({
         aiSuggestions: suggestions,
         isAiGenerating: false
       });
-    } catch (error) {
-      console.error('AI配图生成失败:', error);
-      wx.showToast({
-        title: 'AI配图生成失败',
-        icon: 'none'
-      });
-      this.setData({ isAiGenerating: false });
     }
-  },
-
-  // 模拟AI生成延迟
-  simulateAiGeneration() {
-    return new Promise(resolve => {
-      setTimeout(resolve, 2000);
-    });
-  },
-
-  // 获取模拟AI配图建议
-  getMockAiSuggestions() {
-    const { content, selectedMood } = this.data;
-    const suggestions = [];
-
-    // 根据内容和心情生成不同的配图建议
-    if (content.includes('学习') || content.includes('作业')) {
-      suggestions.push({
-        id: 'study',
-        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=cute%20cartoon%20child%20studying%20with%20books%20and%20pencils%2C%20warm%20orange%20color%20scheme&image_size=square',
-        desc: '学习场景配图'
-      });
-    }
-
-    if (content.includes('游戏') || content.includes('玩')) {
-      suggestions.push({
-        id: 'play',
-        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=happy%20children%20playing%20games%2C%20colorful%20and%20joyful%20atmosphere&image_size=square',
-        desc: '游戏娱乐配图'
-      });
-    }
-
-    if (selectedMood === 'happy' || selectedMood === 'excited') {
-      suggestions.push({
-        id: 'happy',
-        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=bright%20sunny%20day%20with%20rainbow%20and%20flowers%2C%20cheerful%20cartoon%20style&image_size=square',
-        desc: '开心快乐配图'
-      });
-    }
-
-    if (content.includes('朋友') || content.includes('同学')) {
-      suggestions.push({
-        id: 'friends',
-        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=cartoon%20children%20friends%20playing%20together%2C%20warm%20and%20friendly%20atmosphere&image_size=square',
-        desc: '友谊主题配图'
-      });
-    }
-
-    // 默认建议
-    if (suggestions.length === 0) {
-      suggestions.push({
-        id: 'default',
-        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=cute%20diary%20illustration%20with%20warm%20colors%2C%20child%20friendly%20design&image_size=square',
-        desc: '日记主题配图'
-      });
-    }
-
-    return suggestions.slice(0, 3); // 最多返回3个建议
   },
 
   // 选择AI配图建议
@@ -415,12 +395,15 @@ Page({
       const moodName = selectedMoodObj ? selectedMoodObj.name : '';
       const weatherName = selectedWeatherObj ? selectedWeatherObj.name : '';
 
-      // 调用云托管API生成图片
-      const result = await getApp().callCloudAPI('/api/ai/generate-image', {
-        content: this.data.content,
-        mood: moodName,
-        weather: weatherName
-      }, 'AI生成中...');
+      // 调用云函数生成图片
+      const result = await wx.cloud.callFunction({
+        name: 'generateAIComment',
+        data: {
+          content: this.data.content,
+          mood: moodName,
+          weather: weatherName
+        }
+      });
       
       if (result && result.imageUrl) {
         // 生成AI图片对象
@@ -594,7 +577,7 @@ Page({
   async generateAiComment() {
     if (!this.data.content.trim()) {
       wx.showToast({
-        title: '请先写一些内容',
+        title: '请先输入日记内容',
         icon: 'none'
       });
       return;
@@ -603,21 +586,95 @@ Page({
     this.setData({ isAiCommenting: true });
 
     try {
-      await this.simulateAiGeneration();
-      
+      const result = await wx.cloud.callFunction({
+        name: 'generateAIComment',
+        data: {
+          content: this.data.content,
+          mood: this.data.selectedMood,
+          weather: this.data.selectedWeather,
+          tags: this.data.selectedTags
+        }
+      });
+
+      if (result.success) {
+        this.setData({
+          aiComment: result.data.comment,
+          isAiCommenting: false
+        });
+      } else {
+        // 如果云函数失败，使用本地模拟数据
+        const comment = this.getMockAiComment();
+        this.setData({
+          aiComment: comment,
+          isAiCommenting: false
+        });
+      }
+    } catch (error) {
+      console.error('AI评价生成失败:', error);
+      // 使用本地模拟数据作为备选
       const comment = this.getMockAiComment();
       this.setData({
         aiComment: comment,
         isAiCommenting: false
       });
-    } catch (error) {
-      console.error('AI评价生成失败:', error);
-      wx.showToast({
-        title: 'AI评价生成失败',
-        icon: 'none'
-      });
-      this.setData({ isAiCommenting: false });
     }
+  },
+
+  // 模拟AI生成延迟
+  simulateAiGeneration() {
+    return new Promise(resolve => {
+      setTimeout(resolve, 2000);
+    });
+  },
+
+  // 获取模拟AI配图建议
+  getMockAiSuggestions() {
+    const { content, selectedMood } = this.data;
+    const suggestions = [];
+
+    // 根据内容和心情生成不同的配图建议
+    if (content.includes('学习') || content.includes('作业')) {
+      suggestions.push({
+        id: 'study',
+        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=cute%20cartoon%20child%20studying%20with%20books%20and%20pencils%2C%20warm%20orange%20color%20scheme&image_size=square',
+        desc: '学习场景配图'
+      });
+    }
+
+    if (content.includes('游戏') || content.includes('玩')) {
+      suggestions.push({
+        id: 'play',
+        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=happy%20children%20playing%20games%2C%20colorful%20and%20joyful%20atmosphere&image_size=square',
+        desc: '游戏娱乐配图'
+      });
+    }
+
+    if (selectedMood === 'happy' || selectedMood === 'excited') {
+      suggestions.push({
+        id: 'happy',
+        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=bright%20sunny%20day%20with%20rainbow%20and%20flowers%2C%20cheerful%20cartoon%20style&image_size=square',
+        desc: '开心快乐配图'
+      });
+    }
+
+    if (content.includes('朋友') || content.includes('同学')) {
+      suggestions.push({
+        id: 'friends',
+        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=cartoon%20children%20friends%20playing%20together%2C%20warm%20and%20friendly%20atmosphere&image_size=square',
+        desc: '友谊主题配图'
+      });
+    }
+
+    // 默认建议
+    if (suggestions.length === 0) {
+      suggestions.push({
+        id: 'default',
+        image: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=cute%20diary%20illustration%20with%20warm%20colors%2C%20child%20friendly%20design&image_size=square',
+        desc: '日记主题配图'
+      });
+    }
+
+    return suggestions.slice(0, 3); // 最多返回3个建议
   },
 
   // 获取模拟AI评价
@@ -661,43 +718,47 @@ Page({
   },
 
   // 保存草稿
-  saveDraft() {
-    const draftData = this.getDiaryData();
-    draftData.isDraft = true;
-    draftData.updateTime = new Date().toISOString();
-
+  async saveDraft() {
+    const diaryData = this.getDiaryData();
+    
     try {
-      const drafts = wx.getStorageSync('diary_drafts') || [];
+      wx.showLoading({ title: '保存中...' });
       
-      if (this.data.draftId) {
-        // 更新现有草稿
-        const index = drafts.findIndex(d => d.id === this.data.draftId);
-        if (index > -1) {
-          drafts[index] = { ...draftData, id: this.data.draftId };
+      const result = await wx.cloud.callFunction({
+        name: 'saveDiary',
+        data: {
+          ...diaryData,
+          isDraft: true,
+          draftId: this.data.draftId
         }
-      } else {
-        // 创建新草稿
-        const draftId = Date.now().toString();
-        drafts.push({ ...draftData, id: draftId });
-        this.setData({ draftId });
-      }
-
-      wx.setStorageSync('diary_drafts', drafts);
-      wx.showToast({
-        title: '草稿已保存',
-        icon: 'success'
       });
+      
+      if (result.success) {
+        this.setData({
+          draftId: result.data.draftId,
+          isDraft: true
+        });
+        
+        wx.showToast({
+          title: '草稿已保存',
+          icon: 'success'
+        });
+      } else {
+        throw new Error(result.error || '保存草稿失败');
+      }
     } catch (error) {
       console.error('保存草稿失败:', error);
       wx.showToast({
         title: '保存失败',
-        icon: 'none'
+        icon: 'error'
       });
+    } finally {
+      wx.hideLoading();
     }
   },
 
   // 发布日记
-  publishDiary() {
+  async publishDiary() {
     const diaryData = this.getDiaryData();
     
     // 验证必填字段
@@ -710,39 +771,55 @@ Page({
     }
 
     try {
-      const diaries = wx.getStorageSync('diaries') || [];
-      const diaryId = Date.now().toString();
+      wx.showLoading({ title: '发布中...' });
       
-      const newDiary = {
-        ...diaryData,
-        id: diaryId,
-        isDraft: false,
-        createTime: new Date().toISOString(),
-        updateTime: new Date().toISOString()
-      };
-
-      diaries.unshift(newDiary);
-      wx.setStorageSync('diaries', diaries);
-
-      // 如果是从草稿发布，删除草稿
-      if (this.data.draftId) {
-        this.deleteDraft(this.data.draftId);
+      let result;
+      if (this.data.isEditMode) {
+        // 更新现有日记
+        result = await wx.cloud.callFunction({
+          name: 'saveDiary',
+          data: {
+            ...diaryData,
+            diaryId: this.data.editDiaryId,
+            isDraft: false
+          }
+        });
+      } else {
+        // 创建新日记
+        result = await wx.cloud.callFunction({
+          name: 'saveDiary',
+          data: {
+            ...diaryData,
+            isDraft: false
+          }
+        });
       }
+      
+      if (result.success) {
+        // 如果是从草稿发布，删除草稿
+        if (this.data.draftId) {
+          await this.deleteDraft(this.data.draftId);
+        }
 
-      wx.showToast({
-        title: '发布成功',
-        icon: 'success'
-      });
+        wx.showToast({
+          title: this.data.isEditMode ? '更新成功' : '发布成功',
+          icon: 'success'
+        });
 
-      setTimeout(() => {
-        wx.navigateBack();
-      }, 1500);
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1500);
+      } else {
+        throw new Error(result.error || '发布失败');
+      }
     } catch (error) {
       console.error('发布日记失败:', error);
       wx.showToast({
         title: '发布失败',
-        icon: 'none'
+        icon: 'error'
       });
+    } finally {
+      wx.hideLoading();
     }
   },
 
@@ -759,13 +836,59 @@ Page({
     };
   },
 
-  // 加载草稿
-  loadDraft(draftId) {
+  // 加载日记进行编辑
+  async loadDiaryForEdit(diaryId) {
     try {
-      const drafts = wx.getStorageSync('diary_drafts') || [];
-      const draft = drafts.find(d => d.id === draftId);
+      wx.showLoading({ title: '加载中...' });
       
-      if (draft) {
+      const result = await wx.cloud.callFunction({
+        name: 'getDiaries',
+        data: {
+          diaryId: diaryId
+        }
+      });
+      
+      if (result.success) {
+        const diary = result.data.diary;
+        this.setData({
+          selectedDate: diary.date || this.data.selectedDate,
+          selectedMood: diary.mood || '',
+          selectedWeather: diary.weather || '',
+          content: diary.content || '',
+          contentLength: (diary.content || '').length,
+          uploadedImages: diary.images || [],
+          selectedTags: diary.tags || [],
+          aiComment: diary.aiComment || null
+        });
+      } else {
+        throw new Error(result.error || '加载日记失败');
+      }
+    } catch (error) {
+      console.error('加载日记失败:', error);
+      wx.showToast({
+        title: '加载失败',
+        icon: 'error'
+      });
+      wx.navigateBack();
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  // 加载草稿
+  async loadDraft(draftId) {
+    try {
+      wx.showLoading({ title: '加载草稿...' });
+      
+      const result = await wx.cloud.callFunction({
+        name: 'getDiaryDraft',
+        data: {
+          draftId: draftId
+        }
+      });
+      
+      if (result.success) {
+        const draft = result.data.draft;
         this.setData({
           draftId: draftId,
           selectedDate: draft.date || this.data.selectedDate,
@@ -778,18 +901,33 @@ Page({
           aiComment: draft.aiComment || null,
           isDraft: true
         });
+      } else {
+        throw new Error(result.error || '加载草稿失败');
       }
     } catch (error) {
       console.error('加载草稿失败:', error);
+      wx.showToast({
+        title: '加载草稿失败',
+        icon: 'error'
+      });
+    } finally {
+      wx.hideLoading();
     }
   },
 
   // 删除草稿
-  deleteDraft(draftId) {
+  async deleteDraft(draftId) {
     try {
-      const drafts = wx.getStorageSync('diary_drafts') || [];
-      const updatedDrafts = drafts.filter(d => d.id !== draftId);
-      wx.setStorageSync('diary_drafts', updatedDrafts);
+      const result = await wx.cloud.callFunction({
+        name: 'deleteDiaryDraft',
+        data: {
+          draftId: draftId
+        }
+      });
+      
+      if (!result.success) {
+        console.error('删除草稿失败:', result.error);
+      }
     } catch (error) {
       console.error('删除草稿失败:', error);
     }

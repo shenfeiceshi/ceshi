@@ -2,30 +2,34 @@ const app = getApp();
 
 Page({
   data: {
+    // 界面状态
+    isLoading: false,
     // 表单数据
-    formData: {
-      account: '',
-      password: '',
-      confirmPassword: '',
-      agreeTerms: false
-    },
-    
-    // 表单验证
+    username: '',
+    nickname: '',
+    password: '',
+    confirmPassword: '',
+    // 错误信息
     errors: {
-      account: '',
+      username: '',
+      nickname: '',
       password: '',
       confirmPassword: ''
     },
-    
-    // 界面状态
-    isLoading: false,
-    showPassword: false,
-    showConfirmPassword: false
+    // 全局错误提示
+    globalError: '',
+    // 输入框聚焦状态
+    focusStates: {
+      username: false,
+      nickname: false,
+      password: false,
+      confirmPassword: false
+    }
   },
 
   onLoad: function(options) {
     // 检查是否已经登录
-    if (app.checkLoginStatus && app.checkLoginStatus()) {
+    if (app.globalData.isLoggedIn) {
       wx.switchTab({
         url: '/pages/index/index'
       });
@@ -33,64 +37,145 @@ Page({
     }
   },
 
-  // 输入框内容变化
-  onInputChange: function(e) {
-    const field = e.currentTarget.dataset.field;
-    const value = e.detail.value;
-    
+  // 用户名输入
+  onUsernameInput: function(e) {
     this.setData({
-      [`formData.${field}`]: value,
-      [`errors.${field}`]: '' // 清除错误信息
+      username: e.detail.value,
+      'errors.username': '',
+      globalError: ''
+    });
+    // 实时验证
+    this.validateUsername(e.detail.value);
+  },
+
+  // 昵称输入
+  onNicknameInput: function(e) {
+    this.setData({
+      nickname: e.detail.value,
+      'errors.nickname': '',
+      globalError: ''
     });
   },
 
-  // 切换密码显示状态
-  togglePassword: function(e) {
-    const type = e.currentTarget.dataset.type;
-    if (type === 'password') {
+  // 密码输入
+  onPasswordInput: function(e) {
+    this.setData({
+      password: e.detail.value,
+      'errors.password': '',
+      globalError: ''
+    });
+    // 实时验证
+    this.validatePassword(e.detail.value);
+  },
+
+  // 确认密码输入
+  onConfirmPasswordInput: function(e) {
+    this.setData({
+      confirmPassword: e.detail.value,
+      'errors.confirmPassword': '',
+      globalError: ''
+    });
+    // 实时验证
+    this.validateConfirmPassword(e.detail.value);
+  },
+
+  // 输入框聚焦事件
+  onInputFocus: function(e) {
+    const field = e.currentTarget.dataset.field;
+    this.setData({
+      [`focusStates.${field}`]: true,
+      globalError: ''
+    });
+  },
+
+  // 输入框失焦事件
+  onInputBlur: function(e) {
+    const field = e.currentTarget.dataset.field;
+    this.setData({
+      [`focusStates.${field}`]: false
+    });
+  },
+
+  // 实时验证用户名
+  validateUsername: function(username) {
+    if (!username) return;
+    
+    if (username.length < 3) {
       this.setData({
-        showPassword: !this.data.showPassword
+        'errors.username': '用户名至少3位字符'
       });
-    } else if (type === 'confirmPassword') {
+    } else if (username.length > 20) {
       this.setData({
-        showConfirmPassword: !this.data.showConfirmPassword
+        'errors.username': '用户名不能超过20位字符'
+      });
+    } else if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(username)) {
+      this.setData({
+        'errors.username': '用户名只能包含字母、数字、下划线和中文'
       });
     }
   },
 
-  // 切换协议同意状态
-  toggleAgreeTerms: function() {
-    this.setData({
-      'formData.agreeTerms': !this.data.formData.agreeTerms
-    });
+  // 实时验证密码
+  validatePassword: function(password) {
+    if (!password) return;
+    
+    if (password.length < 6) {
+      this.setData({
+        'errors.password': '密码至少6位字符'
+      });
+    } else if (password.length > 20) {
+      this.setData({
+        'errors.password': '密码不能超过20位字符'
+      });
+    }
   },
 
-  // 验证表单
+  // 实时验证确认密码
+  validateConfirmPassword: function(confirmPassword) {
+    if (!confirmPassword) return;
+    
+    if (confirmPassword !== this.data.password) {
+      this.setData({
+        'errors.confirmPassword': '两次输入的密码不一致'
+      });
+    }
+  },
+
+  // 表单验证
   validateForm: function() {
-    const { account, password, confirmPassword, agreeTerms } = this.data.formData;
+    const { username, password, confirmPassword } = this.data;
     const errors = {};
     let isValid = true;
 
-    // 验证账号
-    if (!account.trim()) {
-      errors.account = '请输入账号';
+    // 用户名验证
+    if (!username.trim()) {
+      errors.username = '请输入用户名';
       isValid = false;
-    } else if (account.length < 3) {
-      errors.account = '账号长度不能少于3位';
+    } else if (username.length < 3) {
+      errors.username = '用户名至少3位字符';
+      isValid = false;
+    } else if (username.length > 20) {
+      errors.username = '用户名不能超过20位字符';
+      isValid = false;
+    } else if (!/^[a-zA-Z0-9_\u4e00-\u9fa5]+$/.test(username)) {
+      errors.username = '用户名只能包含字母、数字、下划线和中文';
       isValid = false;
     }
 
-    // 验证密码
-    if (!password) {
+    // 密码验证
+    if (!password.trim()) {
       errors.password = '请输入密码';
       isValid = false;
-    } else if (password.length < 6 || password.length > 20) {
-      errors.password = '密码长度应为6-20位';
+    } else if (password.length < 6) {
+      errors.password = '密码至少6位字符';
+      isValid = false;
+    } else if (password.length > 20) {
+      errors.password = '密码不能超过20位字符';
       isValid = false;
     }
 
-    // 验证确认密码
-    if (!confirmPassword) {
+    // 确认密码验证
+    if (!confirmPassword.trim()) {
       errors.confirmPassword = '请确认密码';
       isValid = false;
     } else if (password !== confirmPassword) {
@@ -98,77 +183,120 @@ Page({
       isValid = false;
     }
 
-    // 验证协议
-    if (!agreeTerms) {
-      wx.showToast({
-        title: '请先同意用户协议',
-        icon: 'none'
-      });
-      isValid = false;
-    }
-
     this.setData({ errors });
     return isValid;
   },
 
-  // 提交注册
-  submitRegister: function() {
+  // 解析错误信息
+  parseErrorMessage: function(error) {
+    const errorMsg = error.message || error.errMsg || '注册失败';
+    
+    // 根据错误信息返回用户友好的提示
+    if (errorMsg.includes('用户名已存在') || errorMsg.includes('already exists')) {
+      return '该用户名已被注册，请换一个试试';
+    } else if (errorMsg.includes('用户名只能包含') || errorMsg.includes('username')) {
+      return '用户名格式不正确，只能包含字母、数字、下划线，长度3-20位';
+    } else if (errorMsg.includes('密码长度') || errorMsg.includes('password')) {
+      return '密码长度不能少于6位';
+    } else if (errorMsg.includes('网络') || errorMsg.includes('network') || errorMsg.includes('timeout')) {
+      return '网络连接失败，请检查网络后重试';
+    } else if (errorMsg.includes('服务器') || errorMsg.includes('server') || errorMsg.includes('internal')) {
+      return '服务器繁忙，请稍后重试';
+    } else if (errorMsg.includes('参数') || errorMsg.includes('parameter')) {
+      return '输入信息有误，请检查后重试';
+    } else {
+      return errorMsg;
+    }
+  },
+
+  // 处理注册
+  handleRegister: function() {
+    if (this.data.isLoading) return;
+
+    // 清除之前的全局错误
+    this.setData({ globalError: '' });
+
+    // 表单验证
     if (!this.validateForm()) {
+      this.setData({
+        globalError: '请检查输入信息是否正确'
+      });
       return;
     }
 
     this.setData({ isLoading: true });
 
-    const { account, password } = this.data.formData;
-    const registerData = {
-      account: account.trim(),
-      password: password
-    };
+    const { username, password, nickname } = this.data;
 
-    // 模拟注册API调用
-    setTimeout(() => {
-      // 这里应该调用实际的注册API
-      // app.userRegister(registerData, (err, data) => {
-      //   this.setData({ isLoading: false });
-      //   
-      //   if (err) {
-      //     wx.showToast({
-      //       title: err.message || '注册失败',
-      //       icon: 'none'
-      //     });
-      //     return;
-      //   }
-      //
-      //   // 注册成功，跳转到登录页面
-      //   wx.showToast({
-      //     title: '注册成功',
-      //     icon: 'success'
-      //   });
-      //   
-      //   setTimeout(() => {
-      //     this.goToLogin();
-      //   }, 1500);
-      // });
-
-      // 模拟注册成功
+    // 调用app.js中的注册方法
+    app.userRegister(username, password, nickname || username, (err, data) => {
       this.setData({ isLoading: false });
-      wx.showToast({
-        title: '注册成功',
-        icon: 'success'
-      });
       
-      setTimeout(() => {
-        this.goToLogin();
-      }, 1500);
-    }, 2000);
+      if (err) {
+        const friendlyError = this.parseErrorMessage(err);
+        
+        // 设置全局错误信息
+        this.setData({
+          globalError: friendlyError
+        });
+        
+        // 根据错误类型设置具体字段错误
+        if (friendlyError.includes('用户名已被注册')) {
+          this.setData({
+            'errors.username': '该用户名已被注册'
+          });
+        } else if (friendlyError.includes('用户名格式')) {
+          this.setData({
+            'errors.username': '用户名格式不正确'
+          });
+        } else if (friendlyError.includes('密码长度')) {
+          this.setData({
+            'errors.password': '密码长度不能少于6位'
+          });
+        }
+        
+        // 显示Toast提示
+        wx.showToast({
+          title: friendlyError,
+          icon: 'none',
+          duration: 3000
+        });
+      } else {
+        // 清除所有错误信息
+        this.setData({
+          globalError: '',
+          errors: {
+            username: '',
+            nickname: '',
+            password: '',
+            confirmPassword: ''
+          }
+        });
+        
+        wx.showToast({
+          title: '注册成功',
+          icon: 'success'
+        });
+        
+        setTimeout(() => {
+          // 注册成功后跳转到登录页面
+          wx.redirectTo({
+            url: '/pages/auth/login/login'
+          });
+        }, 1500);
+      }
+    });
   },
 
   // 跳转到登录页面
   goToLogin: function() {
-    wx.navigateTo({
+    wx.redirectTo({
       url: '/pages/auth/login/login'
     });
   },
 
-
+  // 返回上一页
+  goBack: function() {
+    wx.navigateBack();
+  }
 });

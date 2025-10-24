@@ -77,29 +77,66 @@ Page({
   },
 
   // 加载设置
-  loadSettings() {
-    const cost = wx.getStorageSync('lotteryCost') || 10;
-    this.setData({
-      lotteryCost: cost
+  async loadSettings() {
+    try {
+      const result = await wx.cloud.callFunction({
+      name: 'getLotteryConfig',
+      data: {}
     });
-  },
-
-  // 加载奖品列表
-  loadPrizeList() {
-    const savedPrizes = wx.getStorageSync('prizeList');
-    if (savedPrizes && savedPrizes.length > 0) {
+      if (result.success && result.data) {
+        this.setData({
+          lotteryCost: result.data.cost || 10
+        });
+      } else {
+        this.setData({
+          lotteryCost: 10
+        });
+      }
+    } catch (error) {
+      console.error('加载抽奖设置失败:', error);
       this.setData({
-        prizeList: savedPrizes
+        lotteryCost: 10
       });
-    } else {
-      // 如果没有保存的数据，使用默认数据并保存
-      this.savePrizeList();
     }
   },
 
-  // 保存奖品列表到本地存储
-  savePrizeList() {
-    wx.setStorageSync('prizeList', this.data.prizeList);
+  // 加载奖品列表
+  async loadPrizeList() {
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'getLotteryPrizes',
+        data: {}
+      });
+      if (result.success && result.data && result.data.length > 0) {
+        this.setData({
+          prizeList: result.data
+        });
+      } else {
+        // 如果没有数据，使用默认数据并保存
+        await this.savePrizeList();
+      }
+    } catch (error) {
+      console.error('加载奖品列表失败:', error);
+      // 使用默认数据
+      await this.savePrizeList();
+    }
+  },
+
+  // 保存奖品列表到云端
+  async savePrizeList() {
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'updateLotteryPrizes',
+        data: {
+          prizes: this.data.prizeList
+        }
+      });
+      if (!result.success) {
+        console.error('保存奖品列表失败:', result.error);
+      }
+    } catch (error) {
+      console.error('保存奖品列表失败:', error);
+    }
   },
 
   // 返回上一页
@@ -108,13 +145,26 @@ Page({
   },
 
   // 修改抽奖消耗积分
-  onCostInput(e) {
+  async onCostInput(e) {
     const cost = parseInt(e.detail.value) || 10;
     this.setData({
       lotteryCost: cost
     });
-    // 保存到本地存储
-    wx.setStorageSync('lotteryCost', cost);
+    
+    // 保存到云端
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'updateLotteryConfig',
+        data: {
+          cost: cost
+        }
+      });
+      if (!result.success) {
+        console.error('保存抽奖设置失败:', result.error);
+      }
+    } catch (error) {
+      console.error('保存抽奖设置失败:', error);
+    }
   },
 
   // 添加奖品
@@ -156,15 +206,15 @@ Page({
       content: `确定要删除奖品"${prize.name}"吗？`,
       confirmText: '删除',
       confirmColor: '#ff4757',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
           const updatedPrizes = this.data.prizeList.filter(p => p.id !== prizeId);
           this.setData({
             prizeList: updatedPrizes
           });
           
-          // 保存到本地存储
-          this.savePrizeList();
+          // 保存到云端
+          await this.savePrizeList();
           
           wx.showToast({
             title: '删除成功',
@@ -218,7 +268,7 @@ Page({
   },
 
   // 确认添加/编辑奖品
-  confirmPrize() {
+  async confirmPrize() {
     const { currentPrize, editMode, prizeList } = this.data;
     
     // 验证输入
@@ -277,8 +327,8 @@ Page({
       showPrizeModal: false
     });
     
-    // 保存到本地存储
-    this.savePrizeList();
+    // 保存到云端
+    await this.savePrizeList();
     
     wx.showToast({
       title: editMode === 'add' ? '添加成功' : '保存成功',

@@ -38,24 +38,42 @@ Page({
   },
 
   // 加载奖品数据（编辑模式）
-  loadPrizeData(prizeId) {
-    // 模拟从数据库加载奖品数据
-    const mockPrize = {
-      id: prizeId,
-      name: '积分奖励',
-      description: '获得50积分',
-      image: '/images/prizes/points.png',
-      type: 'virtual',
-      probability: 30,
-      status: 'active',
-      stockType: 'unlimited',
-      stock: 10,
-      value: 50
-    };
-
-    this.setData({
-      prizeData: mockPrize
-    });
+  async loadPrizeData(prizeId) {
+    try {
+      wx.showLoading({ title: '加载中...' });
+      
+      const result = await wx.cloud.callFunction({
+        name: 'getLotteryPrize',
+        data: {
+          prizeId: this.data.prizeId
+        }
+      });
+      
+      if (result.success && result.data) {
+        this.setData({
+          prizeData: result.data
+        });
+      } else {
+        wx.showToast({
+          title: '加载奖品数据失败',
+          icon: 'none'
+        });
+        setTimeout(() => {
+          wx.navigateBack();
+        }, 1500);
+      }
+    } catch (error) {
+      console.error('加载奖品数据失败:', error);
+      wx.showToast({
+        title: '加载失败',
+        icon: 'none'
+      });
+      setTimeout(() => {
+        wx.navigateBack();
+      }, 1500);
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   // 选择图片
@@ -186,8 +204,8 @@ Page({
   },
 
   // 保存奖品
-  savePrize() {
-    const { prizeData, mode } = this.data;
+  async savePrize() {
+    const { prizeData, mode, prizeId } = this.data;
 
     // 表单验证
     if (!prizeData.name.trim()) {
@@ -222,24 +240,44 @@ Page({
       return;
     }
 
-    wx.showLoading({
-      title: mode === 'add' ? '添加中...' : '保存中...'
-    });
-
-    // 模拟保存过程
-    setTimeout(() => {
-      wx.hideLoading();
-      
-      wx.showToast({
-        title: mode === 'add' ? '添加成功' : '保存成功',
-        icon: 'success',
-        success: () => {
-          setTimeout(() => {
-            wx.navigateBack();
-          }, 1500);
-        }
+    try {
+      wx.showLoading({
+        title: mode === 'add' ? '添加中...' : '保存中...'
       });
-    }, 1000);
+
+      const functionName = mode === 'add' ? 'createLotteryPrize' : 'updateLotteryPrize';
+      const params = mode === 'add' ? prizeData : { prizeId, ...prizeData };
+      
+      const result = await wx.cloud.callFunction({
+          name: functionName,
+          data: params
+        });
+      
+      if (result.success) {
+        wx.showToast({
+          title: mode === 'add' ? '添加成功' : '保存成功',
+          icon: 'success',
+          success: () => {
+            setTimeout(() => {
+              wx.navigateBack();
+            }, 1500);
+          }
+        });
+      } else {
+        wx.showToast({
+          title: result.error || '操作失败',
+          icon: 'none'
+        });
+      }
+    } catch (error) {
+      console.error('保存奖品失败:', error);
+      wx.showToast({
+        title: '操作失败',
+        icon: 'none'
+      });
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   // 页面分享

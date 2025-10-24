@@ -46,12 +46,19 @@ Page({
   },
 
   // 加载日记详情
-  loadDiaryDetail() {
+  async loadDiaryDetail() {
     try {
-      const diaries = wx.getStorageSync('diaries') || [];
-      const diary = diaries.find(item => item.id === this.data.diaryId);
+      wx.showLoading({ title: '加载中...' });
       
-      if (diary) {
+      const result = await wx.cloud.callFunction({
+        name: 'getDiaries',
+        data: {
+          diaryId: this.data.diaryId
+        }
+      });
+      
+      if (result.success) {
+        const diary = result.data.diary;
         // 格式化日记数据
         const formattedDiary = this.formatDiaryData(diary);
         this.setData({ 
@@ -60,22 +67,21 @@ Page({
         });
         
         // 增加查看次数
-        this.incrementViewCount(diary);
+        this.incrementViewCount();
       } else {
-        wx.showToast({
-          title: '日记不存在',
-          icon: 'none'
-        });
-        setTimeout(() => {
-          wx.navigateBack();
-        }, 1500);
+        throw new Error(result.error || '日记不存在');
       }
     } catch (error) {
       console.error('加载日记详情失败:', error);
       wx.showToast({
-        title: '加载失败',
+        title: error.message || '加载失败',
         icon: 'none'
       });
+      setTimeout(() => {
+        wx.navigateBack();
+      }, 1500);
+    } finally {
+      wx.hideLoading();
     }
   },
 
@@ -114,56 +120,43 @@ Page({
   },
 
   // 增加查看次数
-  incrementViewCount(diary) {
+  async incrementViewCount() {
     try {
-      const diaries = wx.getStorageSync('diaries') || [];
-      const index = diaries.findIndex(item => item.id === diary.id);
-      
-      if (index !== -1) {
-        diaries[index].viewCount = (diaries[index].viewCount || 0) + 1;
-        wx.setStorageSync('diaries', diaries);
-      }
+      await wx.cloud.callFunction({
+        name: 'updateDiary',
+        data: {
+          diaryId: this.data.diaryId,
+          action: 'incrementView'
+        }
+      });
     } catch (error) {
       console.error('更新查看次数失败:', error);
     }
   },
 
   // 加载相关日记
-  loadRelatedDiaries() {
+  async loadRelatedDiaries() {
     try {
-      const diaries = wx.getStorageSync('diaries') || [];
-      const currentDiary = diaries.find(item => item.id === this.data.diaryId);
+      const result = await wx.cloud.callFunction({
+        name: 'getDiaries',
+        data: {
+          type: 'related',
+          diaryId: this.data.diaryId,
+          limit: 5
+        }
+      });
       
-      if (!currentDiary) return;
-      
-      // 筛选相关日记（相同心情或标签）
-      const related = diaries
-        .filter(diary => {
-          if (diary.id === this.data.diaryId) return false;
-          
-          // 相同心情
-          if (diary.mood === currentDiary.mood) return true;
-          
-          // 相同标签
-          if (currentDiary.tags && diary.tags) {
-            const hasCommonTag = currentDiary.tags.some(tag => 
-              diary.tags.includes(tag)
-            );
-            if (hasCommonTag) return true;
-          }
-          
-          return false;
-        })
-        .slice(0, 5)
-        .map(diary => ({
+      if (result.success) {
+        const related = result.data.diaries.map(diary => ({
           ...diary,
           dateDisplay: this.formatDate(new Date(diary.date)),
           preview: diary.content.substring(0, 30) + (diary.content.length > 30 ? '...' : ''),
           moodEmoji: diary.mood ? this.data.moodMap[diary.mood]?.emoji : '',
           moodName: diary.mood ? this.data.moodMap[diary.mood]?.name : ''
         }));
-      
-      this.setData({ relatedDiaries: related });
+        
+        this.setData({ relatedDiaries: related });
+      }
     } catch (error) {
       console.error('加载相关日记失败:', error);
     }
@@ -204,87 +197,80 @@ Page({
   },
 
   // 生成AI评价
-  generateAiComment() {
+  async generateAiComment() {
     if (this.data.generatingComment) return;
     
     this.setData({ generatingComment: true });
     
-    // 模拟AI生成评价
-    setTimeout(() => {
-      const aiComments = [
-        '今天的日记写得真棒！从你的文字中能感受到满满的正能量，继续保持这份美好的心情吧！✨',
-        '看到你今天的记录，感觉你又成长了一点点呢！每一天的小进步都值得被记录和庆祝！🌟',
-        '你的文字里藏着很多小美好，这些平凡却珍贵的时光，就是生活最真实的样子！💕',
-        '今天的你很棒哦！能够用心记录生活的点点滴滴，这本身就是一件很了不起的事情！🎉',
-        '从你的日记中能感受到你对生活的热爱，这种积极的态度会让每一天都变得更加精彩！🌈'
-      ];
-      
-      const randomComment = aiComments[Math.floor(Math.random() * aiComments.length)];
-      const currentTime = new Date();
-      
-      // 更新日记数据
-      const updatedDiary = {
-        ...this.data.diaryData,
-        aiComment: {
-          text: randomComment,
-          time: this.formatTime(currentTime.getTime()),
-          timestamp: currentTime.getTime()
-        }
-      };
-      
-      // 保存到本地存储
-      this.saveAiComment(updatedDiary.aiComment);
-      
-      this.setData({
-        diaryData: updatedDiary,
-        generatingComment: false
-      });
-      
-      wx.showToast({
-        title: 'AI评价生成成功',
-        icon: 'success'
-      });
-    }, 2000);
-  },
-
-  // 保存AI评价到本地存储
-  saveAiComment(aiComment) {
     try {
-      const diaries = wx.getStorageSync('diaries') || [];
-      const index = diaries.findIndex(item => item.id === this.data.diaryId);
+      const result = await wx.cloud.callFunction({
+        name: 'generateAiComment',
+        data: {
+          diaryId: this.data.diaryId,
+          content: this.data.diaryData.content,
+          mood: this.data.diaryData.mood,
+          weather: this.data.diaryData.weather,
+          tags: this.data.diaryData.tags
+        }
+      });
       
-      if (index !== -1) {
-        diaries[index].aiComment = aiComment;
-        wx.setStorageSync('diaries', diaries);
+      if (result.success) {
+        const aiComment = result.data.aiComment;
+        
+        // 更新日记数据
+        const updatedDiary = {
+          ...this.data.diaryData,
+          aiComment: aiComment
+        };
+        
+        this.setData({
+          diaryData: updatedDiary,
+          generatingComment: false
+        });
+        
+        wx.showToast({
+          title: 'AI评价生成成功',
+          icon: 'success'
+        });
+      } else {
+        throw new Error(result.error || 'AI评价生成失败');
       }
     } catch (error) {
-      console.error('保存AI评价失败:', error);
+      console.error('生成AI评价失败:', error);
+      this.setData({ generatingComment: false });
+      wx.showToast({
+        title: '生成失败，请重试',
+        icon: 'error'
+      });
     }
   },
 
+
+
   // 点赞AI评价
-  toggleAiLike() {
+  async toggleAiLike() {
     const newLikeStatus = !this.data.aiLiked;
     this.setData({ aiLiked: newLikeStatus });
     
-    // 保存点赞状态
     try {
-      const diaries = wx.getStorageSync('diaries') || [];
-      const index = diaries.findIndex(item => item.id === this.data.diaryId);
+      await wx.cloud.callFunction({
+        name: 'toggleAiCommentLike',
+        data: {
+          diaryId: this.data.diaryId,
+          liked: newLikeStatus
+        }
+      });
       
-      if (index !== -1) {
-        diaries[index].aiLiked = newLikeStatus;
-        wx.setStorageSync('diaries', diaries);
+      if (newLikeStatus) {
+        wx.showToast({
+          title: '已点赞',
+          icon: 'success'
+        });
       }
     } catch (error) {
       console.error('保存点赞状态失败:', error);
-    }
-    
-    if (newLikeStatus) {
-      wx.showToast({
-        title: '已点赞',
-        icon: 'success'
-      });
+      // 回滚状态
+      this.setData({ aiLiked: !newLikeStatus });
     }
   },
 

@@ -116,17 +116,54 @@ Page({
 
   // 获取本周数据统计
   async getWeekData() {
-    const { startOfWeek, endOfWeek } = this.getWeekDateRange();
-    
-    // 检查是否有任何数据，如果没有则显示空状态
-    const diaries = wx.getStorageSync('diaries') || [];
-    const userTasks = wx.getStorageSync('userTasks') || [];
-    const pointsRecords = wx.getStorageSync('pointsRecords') || [];
-    const currentPoints = wx.getStorageSync('points') || 0;
-    
-    // 如果所有数据都为空，显示空状态
-    if (diaries.length === 0 && userTasks.length === 0 && pointsRecords.length === 0 && currentPoints === 0) {
-      console.log('周报数据为空，显示空状态');
+    try {
+      const { startOfWeek, endOfWeek } = this.getWeekDateRange();
+      
+      // 使用云函数获取周报数据
+      const result = await wx.cloud.callFunction({
+        name: 'getWeeklyReport',
+        data: {
+          startDate: startOfWeek.toISOString(),
+          endDate: endOfWeek.toISOString()
+        }
+      });
+      
+      if (result.result && result.result.success) {
+        const weekData = result.result.data;
+        this.setData({
+          weekData: {
+            diaryCount: weekData.diaryCount || 0,
+            taskCount: weekData.taskCount || 0,
+            pointsEarned: weekData.pointsEarned || 0,
+            badgeCount: weekData.badgeCount || 0,
+            completedTasks: weekData.completedTasks || 0,
+            totalTasks: weekData.totalTasks || 0,
+            pointsSpent: weekData.pointsSpent || 0,
+            pointsNet: weekData.pointsNet || 0,
+            completionRate: weekData.completionRate || 0,
+            streakDays: weekData.streakDays || 0
+          }
+        });
+      } else {
+        // 显示空状态
+        this.setData({
+          weekData: {
+            diaryCount: 0,
+            taskCount: 0,
+            pointsEarned: 0,
+            badgeCount: 0,
+            completedTasks: 0,
+            totalTasks: 0,
+            pointsSpent: 0,
+            pointsNet: 0,
+            completionRate: 0,
+            streakDays: 0
+          }
+        });
+      }
+    } catch (error) {
+      console.error('获取周报数据失败:', error);
+      // 显示空状态
       this.setData({
         weekData: {
           diaryCount: 0,
@@ -141,49 +178,7 @@ Page({
           streakDays: 0
         }
       });
-      return;
     }
-    
-    // 获取日记数据
-    const weekDiaries = diaries.filter(diary => {
-      const diaryDate = new Date(diary.date);
-      return diaryDate >= startOfWeek && diaryDate <= endOfWeek;
-    });
-
-    // 获取任务统计
-    const { completedTasks, totalTasks } = this.getWeekTaskStats(startOfWeek, endOfWeek);
-    
-    // 获取积分统计 - 修复积分数据联动
-    const { pointsEarned, pointsSpent } = this.getWeekPointsStats(startOfWeek, endOfWeek);
-    const pointsNet = pointsEarned - pointsSpent;
-
-    // 获取徽章数据
-    const badges = wx.getStorageSync('badges') || [];
-    const weekBadges = badges.filter(badge => {
-      const badgeDate = new Date(badge.earnedDate);
-      return badgeDate >= startOfWeek && badgeDate <= endOfWeek;
-    });
-
-    // 计算连续天数
-    const streakDays = this.calculateStreakDays();
-
-    // 计算完成率
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-
-    this.setData({
-      weekData: {
-        diaryCount: weekDiaries.length,
-        taskCount: totalTasks,
-        pointsEarned: pointsEarned,
-        badgeCount: weekBadges.length,
-        completedTasks: completedTasks,
-        totalTasks: totalTasks,
-        pointsSpent: pointsSpent,
-        pointsNet: pointsNet,
-        completionRate: completionRate,
-        streakDays: streakDays
-      }
-    });
   },
 
   // 获取本周任务统计

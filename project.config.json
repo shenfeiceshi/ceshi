@@ -47,7 +47,7 @@
     "disableSWC": true
   },
   "compileType": "miniprogram",
-  "libVersion": "2.19.4",
+  "libVersion": "3.10.2",
   "appid": "wx6b8b967d376ab32f",
   "projectname": "成长日记",
   "condition": {},

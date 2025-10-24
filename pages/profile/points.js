@@ -57,68 +57,125 @@ Page({
   onShow: function() {
     this.loadUserInfo();
     this.loadStats();
+    
+    // 通知首页更新用户信息
+    const pages = getCurrentPages();
+    const indexPage = pages.find(page => page.route === 'pages/index/index');
+    if (indexPage && indexPage.updateUserInfo) {
+      indexPage.updateUserInfo(getApp().globalData.userInfo);
+    }
   },
 
   // 加载用户信息
-  loadUserInfo: function() {
+  async loadUserInfo() {
     try {
-      // 统一使用 'points' 作为主要积分存储键
-      const userPoints = wx.getStorageSync('points') || 0;
-      const userInfo = wx.getStorageSync('userInfo') || {};
+      wx.showLoading({ title: '加载中...' });
       
-      // 确保用户信息中的积分与存储中的积分保持同步
-      if (userInfo.points !== userPoints) {
-        userInfo.points = userPoints;
-        userInfo.totalPoints = userPoints;
-        wx.setStorageSync('userInfo', userInfo);
+      const app = getApp();
+      const token = app.globalData.token;
+      
+      if (!token) {
+        // 未登录状态，使用默认数据
+        this.setData({
+          'userInfo.totalPoints': 0,
+          'userInfo.nickname': '小六',
+          'userInfo.avatar': '/images/default-avatar.png',
+          'userInfo.level': 'Lv.1'
+        });
+        return;
       }
       
-      this.setData({
-        'userInfo.totalPoints': userPoints,
-        'userInfo.nickname': userInfo.nickname || userInfo.nickName || '小六',
-        'userInfo.avatar': userInfo.avatar || userInfo.avatarUrl || '/images/default-avatar.png'
+      const result = await wx.cloud.callFunction({
+        name: 'getUserInfo',
+        data: { token }
       });
+      
+      if (result.result && result.result.success) {
+        const userInfo = result.result.data.userInfo;
+        this.setData({
+          'userInfo.totalPoints': userInfo.points || 0,
+          'userInfo.nickname': userInfo.nickname || userInfo.nickName || '小六',
+          'userInfo.avatar': userInfo.avatar || userInfo.avatarUrl || '/images/default-avatar.png',
+          'userInfo.level': userInfo.level || 'Lv.1'
+        });
+      } else {
+        // 云函数返回失败，使用默认数据
+        this.setData({
+          'userInfo.totalPoints': 0,
+          'userInfo.nickname': '小六',
+          'userInfo.avatar': '/images/default-avatar.png',
+          'userInfo.level': 'Lv.1'
+        });
+      }
     } catch (error) {
       console.error('加载用户信息失败:', error);
+      // 使用默认值
+      this.setData({
+        'userInfo.totalPoints': 0,
+        'userInfo.nickname': '小六',
+        'userInfo.avatar': '/images/default-avatar.png',
+        'userInfo.level': 'Lv.1'
+      });
+    } finally {
+      wx.hideLoading();
     }
   },
 
   // 加载统计数据
-  loadStats: function() {
+  async loadStats() {
     try {
-      // 加载任务统计
-      const tasks = wx.getStorageSync('tasks') || [];
-      const completedTasks = tasks.filter(task => task.completed).length;
+      const app = getApp();
+      const token = app.globalData.token;
       
-      // 加载日记统计
-      const diaries = wx.getStorageSync('diaries') || [];
+      if (!token) {
+        // 未登录状态，使用默认数据
+        this.setData({
+          'stats.totalTasks': 0,
+          'stats.completedTasks': 0,
+          'stats.totalDiaries': 0,
+          'stats.continuousDays': 0
+        });
+        return;
+      }
       
-      // 计算连续天数（简化版本）
-      const continuousDays = this.calculateContinuousDays();
-      
-      this.setData({
-        'stats.totalTasks': tasks.length,
-        'stats.completedTasks': completedTasks,
-        'stats.totalDiaries': diaries.length,
-        'stats.continuousDays': continuousDays
+      const result = await wx.cloud.callFunction({
+        name: 'getPoints',
+        data: {
+          type: 'stats',
+          token
+        }
       });
+      
+      if (result.result && result.result.success) {
+        const stats = result.result.data.stats;
+        this.setData({
+          'stats.totalTasks': stats.totalTasks || 0,
+          'stats.completedTasks': stats.completedTasks || 0,
+          'stats.totalDiaries': stats.totalDiaries || 0,
+          'stats.continuousDays': stats.continuousDays || 0
+        });
+      } else {
+        // 云函数返回失败，使用默认数据
+        this.setData({
+          'stats.totalTasks': 0,
+          'stats.completedTasks': 0,
+          'stats.totalDiaries': 0,
+          'stats.continuousDays': 0
+        });
+      }
     } catch (error) {
       console.error('加载统计数据失败:', error);
+      // 使用默认值
+      this.setData({
+        'stats.totalTasks': 0,
+        'stats.completedTasks': 0,
+        'stats.totalDiaries': 0,
+        'stats.continuousDays': 0
+      });
     }
   },
 
-  // 计算连续天数
-  calculateContinuousDays: function() {
-    try {
-      const diaries = wx.getStorageSync('diaries') || [];
-      if (diaries.length === 0) return 0;
-      
-      // 简化计算，返回日记总数作为连续天数
-      return Math.min(diaries.length, 30);
-    } catch (error) {
-      return 0;
-    }
-  },
+
 
   // 点击菜单项
   onMenuItemTap: function(e) {
@@ -144,7 +201,7 @@ Page({
       case 'about':
         wx.showModal({
           title: '关于成长日记',
-          content: '成长日记是一款专为小学生设计的成长记录应用，帮助孩子养成良好的学习和生活习惯。',
+          content: '成长日记是一款专为小学生设计的成长记录应用，可以帮助孩子养成良好的学习和生活习惯。',
           showCancel: false
         });
         break;
@@ -168,25 +225,45 @@ Page({
   },
 
   // 选择并更新头像
-  changeAvatar: function() {
+  async changeAvatar() {
     const that = this;
     wx.chooseImage({
       count: 1,
       sizeType: ['compressed'],
       sourceType: ['album', 'camera'],
-      success: function(res) {
+      success: async function(res) {
         const tempFilePath = res.tempFilePaths[0];
-        that.setData({
-          'userInfo.avatar': tempFilePath
-        });
         
-        // 保存到本地存储
         try {
-          const userInfo = wx.getStorageSync('userInfo') || {};
-          userInfo.avatar = tempFilePath;
-          wx.setStorageSync('userInfo', userInfo);
+          wx.showLoading({ title: '上传中...' });
+          
+          const result = await wx.cloud.callFunction({
+            name: 'updateUserInfo',
+            data: {
+              avatarPath: tempFilePath
+            }
+          });
+          
+          if (result.success) {
+            that.setData({
+              'userInfo.avatar': result.data.avatarUrl || tempFilePath
+            });
+            
+            wx.showToast({
+              title: '头像更新成功',
+              icon: 'success'
+            });
+          } else {
+            throw new Error(result.error || '头像更新失败');
+          }
         } catch (error) {
           console.error('保存头像失败:', error);
+          wx.showToast({
+            title: '头像更新失败',
+            icon: 'error'
+          });
+        } finally {
+          wx.hideLoading();
         }
       }
     });
@@ -194,25 +271,44 @@ Page({
 
   // 编辑昵称
   editNickname: function() {
+    const that = this;
     wx.showModal({
-      title: '编辑昵称',
+      title: '修改昵称',
       editable: true,
       placeholderText: '请输入新昵称',
-      success: (res) => {
+      success: async function(res) {
         if (res.confirm && res.content) {
-          this.setData({
-            'userInfo.nickname': res.content
-          });
-          
-          // 保存到本地存储
-          const userInfo = wx.getStorageSync('userInfo') || {};
-          userInfo.nickname = res.content;
-          wx.setStorageSync('userInfo', userInfo);
-          
-          wx.showToast({
-            title: '昵称更新成功',
-            icon: 'success'
-          });
+          try {
+            wx.showLoading({ title: '保存中...' });
+            
+            const result = await wx.cloud.callFunction({
+              name: 'updateUserInfo',
+              data: {
+                nickname: res.content
+              }
+            });
+            
+            if (result.success) {
+              that.setData({
+                'userInfo.nickname': res.content
+              });
+              
+              wx.showToast({
+                title: '昵称更新成功',
+                icon: 'success'
+              });
+            } else {
+              throw new Error(result.error || '昵称更新失败');
+            }
+          } catch (error) {
+            console.error('保存昵称失败:', error);
+            wx.showToast({
+              title: '昵称更新失败',
+              icon: 'error'
+            });
+          } finally {
+            wx.hideLoading();
+          }
         }
       }
     });

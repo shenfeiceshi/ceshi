@@ -1,7 +1,7 @@
 // 账号安全管理页面
 const app = getApp()
-import Toast from '@vant/weapp/dist/toast/toast'
-import Dialog from '@vant/weapp/dist/dialog/dialog'
+import Toast from '@vant/weapp/toast/toast'
+import Dialog from '@vant/weapp/dialog/dialog'
 
 Page({
   data: {

@@ -23,40 +23,126 @@ Page({
     this.loadPrizeData();
     this.loadLotteryCost();
     this.loadRecentRecords();
+    
+    // 通知首页更新用户信息（如果从设置页面返回）
+    const pages = getCurrentPages();
+    const indexPage = pages.find(page => page.route === 'pages/index/index');
+    if (indexPage && indexPage.updateUserInfo) {
+      const app = getApp();
+      indexPage.updateUserInfo(app.globalData.userInfo);
+    }
   },
 
   // 加载用户积分
-  loadUserPoints: function() {
-    // 从本地存储获取用户积分（统一使用 'points' 键）
-    const points = wx.getStorageSync('points') || 0;
-    
-    // 同时检查用户信息中的积分，确保数据同步
-    const userInfo = wx.getStorageSync('userInfo') || {};
-    if (userInfo.points && userInfo.points !== points) {
-      // 如果用户信息中的积分与存储中的积分不一致，以存储中的为准
-      userInfo.points = points;
-      wx.setStorageSync('userInfo', userInfo);
+  async loadUserPoints() {
+    try {
+      const app = getApp();
+      const token = app.globalData.token || wx.getStorageSync('loginToken');
+      
+      if (!token) {
+        this.setData({
+          userPoints: 0
+        });
+        return;
+      }
+      
+      const result = await wx.cloud.callFunction({
+        name: 'getUserInfo',
+        data: { token }
+      });
+      
+      if (result.result && result.result.success) {
+        const userInfo = result.result.data.userInfo;
+        this.setData({
+          userPoints: userInfo.points || 0
+        });
+      } else {
+        this.setData({
+          userPoints: 0
+        });
+      }
+    } catch (error) {
+      console.error('加载用户积分失败:', error);
+      this.setData({
+        userPoints: 0
+      });
     }
-    
-    this.setData({
-      userPoints: points
-    });
   },
 
   // 加载奖品数据
-  loadPrizeData: function() {
-    const savedPrizes = wx.getStorageSync('prizeList');
-    if (savedPrizes && savedPrizes.length > 0) {
-      // 计算权重分配的概率
-      const normalizedPrizes = this.normalizeProbabilities(savedPrizes);
-      this.setData({
-        prizes: normalizedPrizes
-      }, () => {
-        // 数据加载完成后初始化转盘
-        this.initLotteryWheel();
+  async loadPrizeData() {
+    try {
+      const result = await wx.cloud.callFunction({
+        name: 'getLotteryPrizes',
+        data: {}
       });
-    } else {
-      // 如果没有奖品数据，使用默认数据
+      
+      if (result.success && result.data.prizes && result.data.prizes.length > 0) {
+        // 计算权重分配的概率
+        const normalizedPrizes = this.normalizeProbabilities(result.data.prizes);
+        this.setData({
+          prizes: normalizedPrizes
+        }, () => {
+          // 数据加载完成后初始化转盘
+          this.initLotteryWheel();
+        });
+      } else {
+        // 如果没有奖品数据，使用默认数据
+        const defaultPrizes = [
+          {
+            id: 1,
+            name: '小红花',
+            emoji: '🌺',
+            probability: 30,
+            description: '获得一朵小红花奖励！'
+          },
+          {
+            id: 2,
+            name: '金币奖励',
+            emoji: '💰',
+            probability: 25,
+            description: '获得额外10积分奖励！'
+          },
+          {
+            id: 3,
+            name: '学习徽章',
+            emoji: '🏆',
+            probability: 20,
+            description: '获得学习小能手徽章！'
+          },
+          {
+            id: 4,
+            name: '彩虹贴纸',
+            emoji: '🌈',
+            probability: 15,
+            description: '获得漂亮的彩虹贴纸！'
+          },
+          {
+            id: 5,
+            name: '神秘礼物',
+            emoji: '🎁',
+            probability: 8,
+            description: '获得神秘大礼包！'
+          },
+          {
+            id: 6,
+            name: '超级奖励',
+            emoji: '⭐',
+            probability: 2,
+            description: '获得超级大奖！'
+          }
+        ];
+        
+        const normalizedPrizes = this.normalizeProbabilities(defaultPrizes);
+        this.setData({
+          prizes: normalizedPrizes
+        }, () => {
+          this.initLotteryWheel();
+        });
+      }
+    } catch (error) {
+      console.error('加载奖品数据失败:', error);
+      // 使用默认数据
       const defaultPrizes = [
         {
           id: 1,
@@ -71,39 +157,8 @@ Page({
           emoji: '💰',
           probability: 25,
           description: '获得额外10积分奖励！'
-        },
-        {
-          id: 3,
-          name: '学习徽章',
-          emoji: '🏆',
-          probability: 20,
-          description: '获得学习小能手徽章！'
-        },
-        {
-          id: 4,
-          name: '彩虹贴纸',
-          emoji: '🌈',
-          probability: 15,
-          description: '获得漂亮的彩虹贴纸！'
-        },
-        {
-          id: 5,
-          name: '神秘礼物',
-          emoji: '🎁',
-          probability: 8,
-          description: '获得神秘大礼包！'
-        },
-        {
-          id: 6,
-          name: '超级奖励',
-          emoji: '⭐',
-          probability: 2,
-          description: '获得超级大奖！'
         }
       ];
-      
-      // 保存默认数据到本地存储
-      wx.setStorageSync('prizeList', defaultPrizes);
       
       const normalizedPrizes = this.normalizeProbabilities(defaultPrizes);
       this.setData({
@@ -115,37 +170,51 @@ Page({
   },
 
   // 加载抽奖消耗积分
-  loadLotteryCost: function() {
-    const cost = wx.getStorageSync('lotteryCost') || 10;
-    this.setData({
-      lotteryCost: cost
-    });
+  async loadLotteryCost() {
+    try {
+      // 使用默认抽奖消耗积分
+      this.setData({
+        lotteryCost: 10
+      });
+    } catch (error) {
+      console.error('加载抽奖配置失败:', error);
+      this.setData({
+        lotteryCost: 10
+      });
+    }
   },
 
   // 加载最近中奖记录
-  loadRecentRecords: function() {
+  async loadRecentRecords() {
     try {
-      const allRecords = wx.getStorageSync('lotteryRecords') || [];
-      
-      // 筛选出中奖记录并按时间倒序排列
-      const winRecords = allRecords
-        .filter(record => record.prizeId && record.prizeName && record.prizeName !== '谢谢参与')
-        .sort((a, b) => b.timestamp - a.timestamp)
-        .slice(0, 3); // 只取最近3条
-      
-      // 格式化记录数据
-      const formattedRecords = winRecords.map(record => ({
-        id: record.id,
-        prizeEmoji: record.prizeEmoji || '🎁',
-        prizeName: record.prizeName,
-        timeAgo: this.formatTimeAgo(record.timestamp)
-      }));
-      
-      this.setData({
-        recentRecords: formattedRecords
+      const result = await wx.cloud.callFunction({
+        name: 'getLotteryRecords',
+        data: {
+          page: 1,
+          pageSize: 3,
+          type: 'win' // 只获取中奖记录
+        }
       });
       
-      console.log('加载最近中奖记录成功：', formattedRecords);
+      if (result.success && result.data.records) {
+        // 格式化记录数据
+        const formattedRecords = result.data.records.map(record => ({
+          id: record.id,
+          prizeEmoji: record.prizeEmoji || '🎁',
+          prizeName: record.prizeName,
+          timeAgo: this.formatTimeAgo(new Date(record.createTime).getTime())
+        }));
+        
+        this.setData({
+          recentRecords: formattedRecords
+        });
+        
+        console.log('加载最近中奖记录成功：', formattedRecords);
+      } else {
+        this.setData({
+          recentRecords: []
+        });
+      }
     } catch (error) {
       console.error('加载最近中奖记录失败：', error);
       this.setData({
@@ -324,57 +393,42 @@ Page({
       isSpinning: true
     });
 
-    // 扣除积分 - 调用云托管API
+    // 调用云函数进行抽奖
     try {
-      const result = await getApp().callCloudAPI('/api/points/deduct', {
-        amount: this.data.lotteryCost,
-        source: '抽奖消费',
-        description: `抽奖消耗${this.data.lotteryCost}积分`
+      const result = await wx.cloud.callFunction({
+        name: 'performLottery',
+        data: {
+          cost: this.data.lotteryCost
+        }
       });
 
-      if (result && result.success) {
-        // 统一更新所有积分相关存储
-        this.updateAllPointsStorage(result.newBalance);
+      if (result.success) {
+        // 更新用户积分
+        this.setData({
+          userPoints: result.data.newBalance
+        });
+        
+        // 使用云函数返回的中奖结果
+        const wonPrize = result.data.prize;
+        console.log('云函数返回的中奖奖品：', wonPrize);
+        
+        // 转盘旋转动画
+        this.spinWheel(wonPrize);
+        return;
       } else {
-        throw new Error('积分扣除失败');
+        throw new Error(result.error || '抽奖失败');
       }
     } catch (error) {
-      console.error('扣除积分失败:', error);
-      // 如果云托管API失败，使用本地存储作为备用
-      const newPoints = this.data.userPoints - this.data.lotteryCost;
-      
-      // 统一更新所有积分相关存储
-      this.updateAllPointsStorage(newPoints);
+      console.error('抽奖失败:', error);
+      this.setData({ isSpinning: false });
+      wx.showToast({
+        title: '抽奖失败，请重试',
+        icon: 'error'
+      });
+      return;
     }
 
-    // 模拟抽奖结果，使用权重分配后的概率
-    const randomNum = Math.random() * 100;
-    let cumulativeProbability = 0;
-    let wonPrize = null;
 
-    console.log('随机数：', randomNum);
-
-    for (let prize of this.data.prizes) {
-      const probability = prize.normalizedProbability || prize.probability || 0;
-      cumulativeProbability += probability;
-      console.log(`奖品 ${prize.name}，概率：${probability}，累积概率：${cumulativeProbability}`);
-      
-      if (randomNum <= cumulativeProbability) {
-        wonPrize = prize;
-        break;
-      }
-    }
-
-    // 如果没有抽中任何奖品（理论上不应该发生），选择第一个奖品
-    if (!wonPrize && this.data.prizes.length > 0) {
-      wonPrize = this.data.prizes[0];
-      console.log('未抽中任何奖品，使用默认奖品：', wonPrize);
-    }
-
-    console.log('最终中奖奖品：', wonPrize);
-
-    // 转盘旋转动画
-    this.spinWheel(wonPrize);
   },
 
   // 转盘旋转动画
